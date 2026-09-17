@@ -64,8 +64,8 @@ const ready = {
 
 void ready;
 
-// PR 179929's shape. Each assertion below stays a single short statement so a
-// reformat cannot drift the directive away from the line that actually errors.
+// PR 179929 的形状。下面每条断言保持单个短语句，让重排版无法把指令和真正
+// 报错的那行漂开。
 const refused = {
   kind: "allowed",
   basis: "rollup",
@@ -73,18 +73,18 @@ const refused = {
   headRollupState: "FAILURE",
 } as const;
 
-// @ts-expect-error BLOCKED with a failing rollup is a refusal, not an allowance.
+// @ts-expect-error 带失败 rollup 的 BLOCKED 是拒绝，不是放行。
 const refusalIsNotAllowed: GitHubMergeAllowed = refused;
 
-// @ts-expect-error CI cannot be clean while GitHub refuses the merge.
+// @ts-expect-error GitHub 拒绝合并时 CI 不可能是 clean。
 const refusalIsNotClean: CiClean = { ...cleanCi, github: refused };
 
-// @ts-expect-error READY cannot carry the failing-checks exit code.
+// @ts-expect-error READY 不能携带 failing-checks 退出码。
 const readyWithBlockerExit: ReadyVerdict = { ...ready, exitCode: 4 };
 
 const unprovenPr = { kind: "ready-pr", context } as const;
 
-// @ts-expect-error An open READY row must carry positive readiness proof.
+// @ts-expect-error 开着的 READY 行必须携带正向的就绪证明。
 const readyWithoutProof: ReadyPr = unprovenPr;
 
 void refusalIsNotAllowed;

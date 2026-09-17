@@ -4,66 +4,66 @@ description: Reproduce triaged Slack bugs through a configured app-control adapt
 disable-model-invocation: true
 ---
 
-# Reproduce and fix issues
+# 复现并修复 issue
 
-Wait for a trusted triage marker in the source thread. Reproduce the exact symptom through the target app's real UI. Verify an existing fix when one exists. Attempt a bounded fix only after a confirmed repro.
+等源 thread 里出现可信的分诊标记。经目标 app 的真实 UI 复现确切症状。已有修复存在时改为验证它。确认复现后才尝试一次有边界的修复。
 
-Load the external Benny configuration supplied by the automation. If the config, required actions, control adapter, or completed feature map is missing, fail closed.
+加载 automation 提供的外部 Benny 配置。配置、必需 action、control adapter 或完成的 feature map 缺失时 fail closed。
 
-## Hard safety rules
+## 硬安全规则
 
-- Freeze the source channel and root thread coordinates before doing any work.
-- Never post a root message in the source channel.
-- Preflight the source parent before every source-thread post.
-- The coordinator is the only Slack poster.
-- Delegated analysis workers are read-only and return findings or media notes.
-- A fix-phase code worker may edit only when its environment provably excludes Slack credentials and every Slack write action. Otherwise the coordinator edits.
-- Every child prompt must explicitly forbid `SendSlackMessage`, `PostToSlack`, `chat.postMessage`, and all other Slack writes.
-- Never give a child a Slack token, posting instructions, source coordinates for posting, or permission to report externally.
-- If a child needs Slack write access to run, do not launch it.
-- Utility bots are evidence sources. They do not own the fix unless a person explicitly delegated the fix to them.
-- The exact discriminating symptom must appear twice through real UI interaction.
-- State inspection may confirm an observation. It must not inject or force the symptom.
-- No confirmed repro means no authored fix.
-- Existing pull requests or commits switch the run to verify mode. Do not author over them.
-- Use `github.com` pull request links.
-- Keep captures, recordings, logs, and tokens out of source control.
-- Use pstack's `principle-guard-the-context-window` for delegated analysis.
-- Apply pstack's `principle-sequence-verifiable-units`, `principle-fix-root-causes`, and `principle-prove-it-works` through repro, fix, and verification.
+- 做任何工作之前冻结源频道和根 thread 坐标。
+- 绝不在源频道发顶层消息。
+- 每次源 thread 发帖之前做源父级 preflight。
+- coordinator 是唯一的 Slack 发帖方。
+- 被委托的分析 worker 只读，只回报发现或媒体笔记。
+- 修复阶段的代码 worker 只有在其环境可证明排除 Slack 凭据和一切 Slack 写 action 时才可编辑。否则由 coordinator 编辑。
+- 每个子 prompt 必须显式禁止 `SendSlackMessage`、`PostToSlack`、`chat.postMessage` 和一切其他 Slack 写。
+- 绝不给子级 Slack token、发帖指令、用于发帖的源坐标、或对外汇报的许可。
+- 子级需要 Slack 写权限才能跑就不要启动它。
+- 工具型 bot 是证据来源。除非有人显式把修复委托给它们，它们不拥有修复。
+- 确切的判别性症状必须经真实 UI 交互出现两次。
+- 状态检查可确认观察结果，不得注入或强造症状。
+- 没有确认的复现就不写修复。
+- 已有 pull request 或 commit 就把本次运行切到验证模式。不在其上重写。
+- 用 `github.com` 的 pull request 链接。
+- 截图、录像、日志、token 都不进源码控制。
+- 被委托的分析用 pstack 的 `principle-guard-the-context-window`。
+- 复现、修复、验证全程应用 pstack 的 `principle-sequence-verifiable-units`、`principle-fix-root-causes`、`principle-prove-it-works`。
 
-## 1. Freeze source coordinates
+## 1. 冻结源坐标
 
-Before making a work list or delegating:
+做工作清单或委托之前：
 
-1. Require the trigger channel to equal the configured source channel.
-2. Set `SOURCE_THREAD_TS` to `trigger.thread_ts` when present. Otherwise use `trigger.ts`.
-3. Require a nonempty `SOURCE_THREAD_TS`.
-4. Store `SOURCE_CHANNEL_ID` and `SOURCE_THREAD_TS` as immutable values.
-5. Read the source thread and verify its root has those exact coordinates.
-6. Fetch the source permalink.
+1. 要求 trigger 频道等于配置的源频道。
+2. 有 `trigger.thread_ts` 就把 `SOURCE_THREAD_TS` 设为它，否则用 `trigger.ts`。
+3. 要求 `SOURCE_THREAD_TS` 非空。
+4. 把 `SOURCE_CHANNEL_ID` 和 `SOURCE_THREAD_TS` 存为不可变值。
+5. 读源 thread 并核实其根恰好是这组坐标。
+6. 取源 permalink。
 
-Never replace these values with a reply timestamp, operations timestamp, or status-message timestamp.
+绝不用回复时间戳、operations 时间戳或状态消息时间戳替换这些值。
 
-Before every source-channel post:
+每次源频道发帖之前：
 
-1. Read the thread by the immutable coordinates.
-2. Confirm the parent exists, is not deleted, and still belongs to the source channel.
-3. Send only with `channel=SOURCE_CHANNEL_ID` and `thread_ts=SOURCE_THREAD_TS`.
-4. Read the thread again and verify the new message is a reply.
+1. 按不可变坐标读 thread。
+2. 确认父级存在、未被删、仍属于源频道。
+3. 只用 `channel=SOURCE_CHANNEL_ID` 和 `thread_ts=SOURCE_THREAD_TS` 发送。
+4. 再读 thread 并核实新消息是回复。
 
-If any check fails, post nothing. Never retry at the root or in a fallback channel.
+任何检查失败就不发。绝不在根或兜底频道重试。
 
-## 2. Wait for the triage contract
+## 2. 等分诊契约
 
-Watch the source thread for the configured verdict budget. Stay silent while waiting.
+按配置的判定预算看守源 thread。等待期间保持沉默。
 
-Accept a verdict only when:
+只有满足以下全部才接受判定：
 
-- Its author matches `slack.triage_identity_user_id`.
-- It is a reply under `SOURCE_THREAD_TS`.
-- It contains exactly one configured marker.
+- 作者匹配 `slack.triage_identity_user_id`。
+- 是 `SOURCE_THREAD_TS` 下的回复。
+- 恰好含一个配置的标记。
 
-Public marker forms:
+公开标记形式：
 
 ```text
 [benny:bug]
@@ -73,42 +73,42 @@ Public marker forms:
 [benny:other]
 ```
 
-Proceed only for `bug` or `performance`. Capture the optional tracker URL. Stop silently for `other`, a missing verdict, an untrusted author, conflicting markers, or a timeout.
+只对 `bug` 或 `performance` 继续。捕获可选 tracker URL。`other`、判定缺失、作者不可信、标记冲突或超时则静默停止。
 
-This marker replaces private bot identities and free-form verdict matching.
+这个标记取代私有 bot 身份和自由形式判定匹配。
 
-## 3. Apply ownership and fix-artifact gates
+## 3. 应用归属与修复物闸门
 
-Re-read the thread immediately before starting work.
+开始工作之前立即重读 thread。
 
-### Someone is explicitly fixing it
+### 有人明确在修
 
-Stop when a person clearly claims the fix, gives a concrete implementation plan, or asks another agent to implement, patch, fix, or open a pull request.
+有人明确认领修复、给出具体实现计划、或让另一个 agent 去实现、打补丁、修复、开 pull request 时停止。
 
-Do not treat these as fix ownership:
+以下不算修复归属：
 
-- A bot summarizes evidence.
-- A tool looks up logs or tickets.
-- Someone asks a bot to diagnose, explain, inspect, or reproduce.
-- A bot posts a cause hypothesis without agreeing to implement it.
+- bot 总结证据。
+- 工具查日志或工单。
+- 有人让 bot 诊断、解释、检查或复现。
+- bot 发了原因假设但没同意去实现。
 
-Judge the requested action, not the presence of a bot.
+判定被请求的动作，不是 bot 的存在本身。
 
-### A fix artifact already exists
+### 修复物已存在
 
-If an open pull request or merged commit plausibly fixes this report, switch to `references/verify-existing-fix.md`.
+开着 pull request 或已合并 commit 可能修了这份报告时，切到 `references/verify-existing-fix.md`。
 
-An artifact may come from the thread, tracker issue, repository history, or pull request search. A claim without a commit or pull request is not a fix artifact.
+修复物可来自 thread、tracker issue、仓库历史或 pull request 搜索。没有 commit 或 pull request 的声称不算修复物。
 
-If a person owns the work but has not produced an artifact, stop. Do not race them.
+有人拥有该工作但还没产出修复物就停。不要抢跑。
 
-## 4. Open an optional operations thread
+## 4. 开一个可选 operations thread
 
-If `slack.operations_channel_id` is configured, the coordinator may create one root status message there. This is the only allowed root post in the repro workflow.
+配置了 `slack.operations_channel_id` 时，coordinator 可在那里建一条顶层状态消息。这是复现工作流里唯一允许的顶层帖。
 
-Store its coordinates as `OPERATIONS_CHANNEL_ID` and `OPERATIONS_THREAD_TS`. Never confuse them with the source coordinates.
+把它的坐标存为 `OPERATIONS_CHANNEL_ID` 和 `OPERATIONS_THREAD_TS`。绝不与源坐标混淆。
 
-Use the configured plain Unicode status strings. Keep status text short:
+用配置的纯 Unicode 状态字符串。状态文本保持短：
 
 - Reproducing
 - Could not reproduce
@@ -119,192 +119,192 @@ Use the configured plain Unicode status strings. Keep status text short:
 - Draft pull request opened
 - Fix did not land
 
-Prefer configured Cursor Slack actions. Use `BENNY_SLACK_BOT_TOKEN` only when the user configured it for a narrow missing capability such as editing this one status message. Never expose the token to a worker.
+优先配置的 Cursor Slack action。`BENNY_SLACK_BOT_TOKEN` 只在用户为窄缺口（比如编辑这一条状态消息）配置了它时才用。绝不把 token 暴露给 worker。
 
-If no operations channel is configured, keep detailed status in the automation run output. Do not substitute a source-channel root message.
+没配 operations 频道就把详细状态留在 automation 运行输出里。不要用源频道顶层消息替代。
 
-## 5. Load and check the control adapter
+## 5. 加载并检查 control adapter
 
-Read `references/control-adapter.md` and the completed map at `control.feature_map_path`, then invoke the skill named by `control.skill_name`.
+读 `references/control-adapter.md` 和 `control.feature_map_path` 处完成的 map，然后调用 `control.skill_name` 点名的 skill。
 
-Find the feature-map section that matches the reported user path. Read it before driving the app. If no section covers the feature, mark the run blocked instead of inventing a path or selector.
+找到匹配报告用户路径的 feature-map 小节。驱动 app 之前读它。没有小节覆盖该功能就把运行标为 blocked，不要编造路径或 selector。
 
-Require all seven capabilities:
+要求全部七项能力：
 
-1. Bring up the configured target app and test environment.
-2. Navigate the mapped feature and exercise its documented states.
-3. Drive the real UI with clicks, typing, keys, scrolling, drag, resize, or navigation.
-4. Inspect state without mutating it.
-5. Capture screenshots.
-6. Start and stop a screen recording.
-7. Clean up processes, sessions, profiles, and temporary data.
+1. 拉起配置的目标 app 和测试环境。
+2. 导航已建图功能并操练其文档化状态。
+3. 用点击、打字、按键、滚动、拖拽、缩放或导航驱动真实 UI。
+4. 不改变状态地检查它。
+5. 截图。
+6. 起停录屏。
+7. 清理进程、会话、profile 和临时数据。
 
-If the adapter is absent or any required capability is missing, mark the operations status as blocked and stop. Do not pretend a screenshot, unit test, state mutation, or source reading is a UI repro.
+adapter 缺席或缺任何必需能力时，把 operations 状态标为 blocked 并停止。不要把截图、单测、状态改写或读源码冒充为 UI 复现。
 
-## 6. Study the report
+## 6. 研读报告
 
-Read the full source thread and tracker issue when present.
+读完整源 thread，有 tracker issue 时一并读。
 
-Collect:
+收集：
 
-- Exact action path
-- Expected behavior
-- Observed behavior
-- Discriminating state where they diverge
-- Frequency
-- Version, environment, and platform
-- Attachments and error signatures
-- Candidate code area
+- 确切动作路径
+- 期望行为
+- 观察到的行为
+- 两者分叉处的判别性状态
+- 频率
+- 版本、环境、平台
+- 附件和错误签名
+- 候选代码区域
 
-Inspect screenshots and video. Use read-only parallel workers for code history, test ideas, blast-radius mapping, and media review when useful. Each worker gets a narrow question and the Slack-write prohibition.
+检查截图和视频。有用时用只读并行 worker 做代码历史、测试想法、blast-radius 建图和媒体审查。每个 worker 拿一个窄问题和 Slack 写禁令。
 
-Use pstack's `how` skill to trace the action through the repository. Use `why` for regression history and defensive code. Form competing cause hypotheses and identify evidence that would separate them.
+用 pstack 的 `how` skill 把动作在仓库里追到底。回归历史和防御性代码用 `why`。形成相互竞争的原因假设，并识别能区分它们的证据。
 
-## 7. Reproduce
+## 7. 复现
 
-Bring up the target app through the control adapter.
+经 control adapter 拉起目标 app。
 
-Confirm the correct app, workspace, account, data set, and feature state before acting. Use stable app markers. Do not rely on window order or a familiar title alone.
+行动之前确认正确的 app、workspace、账号、数据集和功能状态。用稳定的 app 标记。别只靠窗口顺序或眼熟的标题。
 
-Drive the reported path through real UI actions.
+经真实 UI 动作走报告的路径。
 
-Before calling it reproduced:
+宣布复现之前：
 
-1. Name the correct final state.
-2. Name the broken final state.
-3. Reach the point where they diverge.
-4. Observe the broken state.
-5. Reset enough state to make the second attempt independent.
-6. Repeat the same path and observe the same broken state again.
-7. Cross-check a real state value when possible.
+1. 说出正确的最终状态。
+2. 说出损坏的最终状态。
+3. 走到两者分叉的点。
+4. 观察到损坏状态。
+5. 重置足够状态让第二次尝试独立。
+6. 重走同一路径并再次观察到同一损坏状态。
+7. 可能时交叉核对一个真实状态值。
 
-An expected dialog, loading state, or setup step is not the bug. Capture the final state that distinguishes correct from broken behavior.
+预期中的对话框、加载状态或 setup 步骤不是 bug。捕获区分正常与损坏行为的最终状态。
 
-Use the configured repro budget. If the symptom does not reproduce within it, report a clean `Could not reproduce` outcome. If the environment cannot provide a required capability, report `Blocked` and state what was missing.
+用配置的复现预算。预算内症状没复现就报告干净的 `Could not reproduce` 结果。环境给不了必需能力就报告 `Blocked` 并说明缺什么。
 
-## 8. Capture and review evidence
+## 8. 捕获并审查证据
 
-For a successful repro:
+成功复现时：
 
-- Record the full path through the symptom.
-- Capture a screenshot of the broken final state.
-- Save a short note with the exact steps and observed state.
-- Keep artifacts in the configured temporary artifact directory.
+- 录下穿过症状的完整路径。
+- 截损坏最终状态的图。
+- 存一条短笔记：确切步骤和观察到的状态。
+- 材料放配置的临时 artifact 目录。
 
-Have a read-only media reviewer answer one question: does the evidence visibly show the discriminating broken state?
+让只读媒体审查者回答一个问题：证据是否可见地展示了判别性的损坏状态？
 
-If the answer is no or uncertain, the repro is not confirmed. Capture better evidence or use `Could not reproduce`.
+答案是否定或不确定，复现就不算确认。捕获更好的证据或用 `Could not reproduce`。
 
-Post detailed evidence only in the operations thread when configured. Keep the source update concise.
+配置了 operations thread 时才把详细证据发那里。源更新保持简洁。
 
-## 9. Report the repro outcome
+## 9. 报告复现结果
 
-Update the operations status first.
+先更新 operations 状态。
 
-For `Could not reproduce` or `Blocked`, post nothing in the source thread. The operations thread or run output carries the result.
+`Could not reproduce` 或 `Blocked` 时源 thread 什么也不发。结果由 operations thread 或运行输出承载。
 
-For a confirmed repro, run the source preflight and post at most one unprompted source reply:
+确认复现时，跑源 preflight 并至多主动发一条源回复：
 
-- Say the issue reproduced.
-- Link the operations evidence thread when one exists.
-- Include at most three short findings.
-- Link the tracker issue when one exists.
-- Do not ping an owner by default.
+- 说 issue 复现了。
+- 有 operations 证据 thread 就链接它。
+- 至多三条短发现。
+- 有 tracker issue 就链接它。
+- 默认不 ping owner。
 
-Attach evidence only when the configured Slack action keeps it inside the same source thread and the organization's retention policy allows it.
+仅当配置的 Slack action 能把附件留在同一源 thread 内、且组织保留策略允许时才附证据。
 
-Wait for the configured rejection window. If a person shows that the setup or interpretation was wrong, correct the repro once. Do not start the fix phase until the window closes without a valid rejection.
+等配置的驳回窗口。有人指出 setup 或解读有误就更正复现一次。窗口关闭且无有效驳回之前，不要开始修复阶段。
 
-## 10. Verify an existing fix
+## 10. 验证已有修复
 
-When a fix artifact exists, follow `references/verify-existing-fix.md`.
+修复物存在时遵循 `references/verify-existing-fix.md`。
 
-Verification must show the symptom on the baseline and its absence on the patched build. Both paths use the real UI twice.
+验证必须在 baseline 上展示症状、在打过补丁的 build 上展示它消失。两条路径都经真实 UI 走两遍。
 
-Do not edit the existing fix, add a competing patch, or open a replacement pull request.
+不要编辑已有修复、不加竞争补丁、不开替代 pull request。
 
-## 11. Qualify a bounded fix
+## 11. 判定有边界修复的资格
 
-Attempt a fix only when all of these hold:
+以下全部成立才尝试修复：
 
-- The outcome is a plain confirmed repro.
-- Media review confirmed the broken final state.
-- No existing fix artifact appeared.
-- No person claimed the fix during the rejection window.
-- Runtime evidence identifies the root cause.
-- The likely change fits the configured fix budget and repository scope.
-- The control adapter can run both baseline and patched builds.
+- 结果是朴素的已确认复现。
+- 媒体审查确认了损坏的最终状态。
+- 没出现已有修复物。
+- 驳回窗口内没人认领修复。
+- 运行时证据指认了根因。
+- 可能的改动在配置的修复预算和仓库 scope 内。
+- control adapter 能同时跑 baseline 和打过补丁的 build。
 
-If any condition fails, keep the repro report and stop without a pull request.
+任何条件不满足就保留复现报告、不开 pull request 直接停。
 
-When the gate passes, update operations status to `Attempting bounded fix`.
+闸门通过就把 operations 状态更新为 `Attempting bounded fix`。
 
-## 12. Root-cause and implement
+## 12. 定位根因并实现
 
-The coordinator owns every Slack post, the final diff review, commits, and the pull request.
+coordinator 拥有每条 Slack 帖、最终 diff review、commit 和 pull request。
 
-Read-only workers may:
+只读 worker 可以：
 
-- Trace code and history
-- Propose tests
-- Map blast radius
-- Review a diff
-- Review media
+- 追代码和历史
+- 提测试建议
+- 建 blast-radius 图
+- 审 diff
+- 审媒体
 
-They do not edit, run external writes, post status, or own the fix.
+它们不编辑、不跑外部写、不发状态、不拥有修复。
 
-A tightly scoped code edit may be delegated during this phase only when tool isolation removes Slack credentials and every Slack write action from that worker. Its prompt must still carry the explicit Slack-write ban. The coordinator reviews the edit and runs or verifies the required tests. If tool isolation is uncertain, keep the edit in the coordinator.
+本阶段只有当工具隔离从该 worker 环境中移除 Slack 凭据和一切 Slack 写 action 时，才可委托一次严格限定范围的代码编辑。它的 prompt 仍须带显式 Slack 写禁令。coordinator 审查该编辑并跑或验证所需测试。工具隔离不确定就把编辑留在 coordinator。
 
-Confirm the mechanism with runtime evidence. Eliminate competing hypotheses before editing.
+用运行时证据确认机制。编辑之前排除竞争性假设。
 
-Fix the root cause with the smallest justified change.
+用最小的合理改动修根因。
 
-- Invoke pstack's `tdd` skill when there is a cheap local test target, and write the failing test before the fix.
-- State why TDD was skipped when the path is expensive, unclear, or integration-heavy.
-- Keep unrelated cleanup out.
-- Stop if the change grows beyond the configured effort or risk budget.
+- 有便宜的本地测试目标时调用 pstack 的 `tdd` skill，先写失败测试再写修复。
+- 路径昂贵、不明或集成偏重时，说明跳过 TDD 的原因。
+- 不掺无关清理。
+- 改动膨胀超出配置的 effort 或风险预算就停。
 
-## 13. Prove the fix
+## 13. 证明修复
 
-Keep the original baseline evidence.
+保留原始 baseline 证据。
 
-On the patched build:
+在打过补丁的 build 上：
 
-1. Run the same real UI path.
-2. Repeat it twice.
-3. Show that the broken state is gone.
-4. Show the expected state in its place.
-5. Capture an after recording and screenshot.
-6. Cross-check the same real state value used for the baseline.
+1. 跑同一真实 UI 路径。
+2. 重复两遍。
+3. 展示损坏状态已消失。
+4. 展示期望状态取而代之。
+5. 捕获 after 录像和截图。
+6. 交叉核对 baseline 用过的同一真实状态值。
 
-A compile, unit test, code review, or plausible diff is not after evidence.
+编译通过、单测、代码 review 或看似合理的 diff 都不算 after 证据。
 
-Run focused tests, then smoke the blast radius around the changed behavior. Cover nearby states, inputs, permissions, platforms, and failure paths that the change could affect. Stop without a pull request if a regression remains.
+跑聚焦测试，然后对改动行为周围的 blast radius 冒烟。覆盖改动可能影响的邻近状态、输入、权限、平台和失败路径。仍有回归就不开 pull request 直接停。
 
-## 14. Open a draft pull request
+## 14. 开 draft pull request
 
-Only after before-and-after proof:
+只有 before-and-after 证明齐备后：
 
-- Review the final diff for unrelated changes and secrets.
-- Run the repository's required checks.
-- Create small ordered commits when the repository workflow allows it.
-- Open a draft pull request. Never merge or deploy from this workflow.
-- Link the configured tracker issue using the tracker's supported pull request syntax.
-- Use the configured public URL form, normally `https://github.com/{owner}/{repo}/pull/{number}`.
-- Include the repro steps, root cause, test result, before and after evidence, and blast-radius checks.
-- Run the pull request text and all Slack updates through pstack's `unslop` skill.
+- 审最终 diff 里的无关改动和 secret。
+- 跑仓库要求的检查。
+- 仓库工作流允许时做小型有序 commit。
+- 开 draft pull request。本工作流绝不合并或部署。
+- 用 tracker 支持的 pull request 语法链接配置的 tracker issue。
+- 用配置的公开 URL 形式，一般是 `https://github.com/{owner}/{repo}/pull/{number}`。
+- 含复现步骤、根因、测试结果、before 和 after 证据、blast-radius 检查。
+- pull request 文本和所有 Slack 更新过一遍 pstack 的 `unslop` skill。
 
-If pull request creation fails, do not claim success. Keep the commit or branch state in the run output and mark operations status `Fix did not land`.
+pull request 创建失败时不要声称成功。把 commit 或分支状态留在运行输出里，operations 状态标 `Fix did not land`。
 
-On success, mark operations status `Draft pull request opened` and post one concise reply in the operations thread with the linked pull request. Do not create a second source-channel root or unprompted source reply.
+成功时把 operations 状态标 `Draft pull request opened`，并在 operations thread 发一条带链接 pull request 的简洁回复。不要创建第二个源频道顶层帖或主动的源回复。
 
-## 15. Follow-ups and cleanup
+## 15. 收尾与清理
 
-Watch the configured operations thread for one follow-up window.
+按配置看守 operations thread 一个 follow-up 窗口。
 
-- Answer a direct question from evidence already gathered.
-- Apply one concrete correction and rerun the repro once when it invalidates the setup.
-- Stay out of human coordination and side chatter.
-- Stop when asked.
+- 用已收集的证据答直接提问。
+- setup 被证伪时应用一次具体更正并重跑复现一次。
+- 不掺和人类协调和闲聊。
+- 被要求就停。
 
-Always call the control adapter's cleanup capability. Keep artifacts only as long as the configured retention policy allows.
+总是调 control adapter 的清理能力。材料只按配置的保留策略留存。

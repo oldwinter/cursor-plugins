@@ -1,16 +1,16 @@
 ---
 name: architect
-description: "Sketch types, signatures, and module structure before code, then stay in the loop while implementation fills in. Use for /architect, 'architect this', 'design this', or non-trivial work where jumping to code would lock in the wrong shape."
+description: "写代码之前先勾类型、签名和模块结构，然后在实现填充时保持在环。用于 /architect、'architect this'、'design this'，或直接写代码会锁死错误形态的非平凡工作。"
 disable-model-invocation: true
 ---
 
 # Architect
 
-Design before implementing. Sketch types, function signatures, class shapes, and module boundaries with `not implemented` bodies and pseudocode. Synthesize across multiple model perspectives, then fill in code against the chosen sketch. If implementation proves the sketch wrong, throw it out and redesign.
+先设计再实现。用 `not implemented` 函数体和伪代码勾出类型、函数签名、类形态和模块边界。跨多个模型视角综合，然后对照选定的草图填代码。如果实现证明草图错了，扔掉它重新设计。
 
-## Start
+## 开始
 
-Open a todolist with one entry per phase before starting.
+开始之前开一个每阶段一条的 todolist。
 
 1. Ground
 2. Sketch
@@ -18,66 +18,66 @@ Open a todolist with one entry per phase before starting.
 4. Implement
 5. Scrap
 
-## Phase A: Ground the problem
+## Phase A：为问题打地基
 
-Build a real mental model of every system the new code touches. Run the **how** skill over the relevant subsystems.
+对每个新代码会触及的系统建立真实心智模型。对相关子系统跑 **how** skill。
 
-Naming a file isn't grounding. Produce the traced model `how` prescribes. If the design redefines ownership or layering, also run the **why** skill on the existing shape so the rationale becomes a constraint, not a guess.
+指个文件名不算 grounding。产出 `how` 规定的 trace 模型。如果设计重定义 ownership 或分层，再对现有形态跑 **why** skill，让理由变成约束而不是猜测。
 
-Skip Phase A only when the work is genuinely greenfield with no surrounding system to integrate.
+只有当工作是真 greenfield、没有周边系统要整合时才跳过 Phase A。
 
-## Phase B: Sketch
+## Phase B：Sketch
 
-Run the **arena** skill with the design-sketch task and the Phase A grounding artifacts. Pass `references/runner-prompt.md` as each runner's prompt. Each candidate produces a design package shaped per `references/rationale-template.md`.
+带着设计草图任务和 Phase A 的 grounding 产物跑 **arena** skill。把 `references/runner-prompt.md` 作为每个 runner 的 prompt 传入。每个候选按 `references/rationale-template.md` 的形态产出一份设计包。
 
-Use your configured architect runners (defaults `claude-fable-5-1-thinking-max`, `gpt-5.6-sol-max`, `grok-4.6-fast-xhigh`, `claude-opus-5-thinking-xhigh`).
+用你配置的 architect runner（默认 `claude-fable-5-1-thinking-max`、`gpt-5.6-sol-max`、`grok-4.6-fast-xhigh`、`claude-opus-5-thinking-xhigh`）。
 
-Design it twice. Require at least two structurally distinct candidates before synthesis, even when the first looks sufficient. This is the **exhaust-the-design-space** principle skill made concrete. Whole-shape alternatives, not point fixes inside one shape.
+设计两遍。综合之前要求至少两个结构上不同的候选，即使第一个看着够用。这是 **exhaust-the-design-space** 原则 skill 的具体化：要的是整体形态上的替代方案，不是同一形态里的点状修补。
 
-Screen every candidate against [`references/design-red-flags.md`](references/design-red-flags.md) before synthesis. Reject or revise shallow modules, information leakage, temporal decomposition, and pass-through methods.
+综合之前拿 [`references/design-red-flags.md`](references/design-red-flags.md) 筛每个候选。拒绝或修订浅模块、信息泄漏、按时间顺序切分、透传方法。
 
-Compare viable candidates on interface depth. Prefer the design that hides more complexity behind a smaller, simpler public surface. A rich interface can keep call chains short by concentrating capability instead of scattering it across layers.
+在可行候选之间按接口深度比较。优先那把更多复杂度藏在更小更简公共表面后的设计。富接口可以通过集中能力而非散到各层来保持调用链短。
 
-Arena returns one synthesized design package. The synthesis decision populates the rationale's "Synthesis decision" section.
+arena 返回一个综合设计包。综合决策填进 rationale 的 "Synthesis decision" 一节。
 
-## Phase C: Agree (opt-in)
+## Phase C：Agree（可选）
 
-Default: proceed directly to implementation with the synthesized design. No human checkpoint.
+默认：带着综合设计直接进实现。无人类 checkpoint。
 
-Opt in to a checkpoint when the invoker explicitly asks: "/architect with checkpoint," "stop and show me before implementing," or similar. Then surface the synthesized design and pause for sign-off.
+当调用方明确要求时才启用 checkpoint："/architect with checkpoint"、"stop and show me before implementing" 之类。此时摆出综合设计并暂停等签字。
 
-The synthesis can ship as its own commit either way, as the "scaffold first" mode of the **foundational-thinking** principle skill. Planned and scoped breakage during fill-in is fine, per the **outcome-oriented-execution** principle skill. For adversarial pressure on the design before implementing, run the **interrogate** skill on the synthesized sketch.
+无论哪种，synthesis 都可以作为独立 commit 交付——即 **foundational-thinking** 原则 skill 的"scaffold first"模式。填充期间有计划、有范围的破坏没问题，按 **outcome-oriented-execution** 原则 skill。实现之前想对设计施加对抗压力，对综合草图跑 **interrogate** skill。
 
-If the human pushes back on the shape (in a checkpoint or after the fact), treat that as Phase A evidence. Re-ground and re-run Phase B before writing more code.
+如果人类对形态有异议（checkpoint 上或事后），当作 Phase A 证据：重新 ground，重跑 Phase B，再写代码。
 
-## Phase D: Implement against the sketch
+## Phase D：对照草图实现
 
-Replace `not implemented` bodies with code, pseudocode with logic. The synthesized sketch is the contract.
+把 `not implemented` 函数体换成代码，把伪代码换成逻辑。综合草图就是契约。
 
-Deviations from the sketch are signal worth surfacing, not friction to absorb silently. If a function needs a parameter the sketch didn't anticipate, ask whether the sketch was wrong, the requirement was missed, or the implementation is overreaching.
+对草图的偏差是值得摆出来的信号，不是要默默吸收的摩擦。某个函数需要草图没预见的参数时，问：是草图错了、需求漏了、还是实现越界了。
 
-## Phase E: Scrap when the architecture is wrong
+## Phase E：架构错了就推翻
 
-If implementation keeps producing friction the sketch can't absorb, throw the sketch out. Don't bolt fixes onto a wrong design, per the **redesign-from-first-principles** and **fix-root-causes** principle skills.
+如果实现持续产生草图吸收不了的摩擦，扔掉草图。别往错误设计上螺栓修补——按 **redesign-from-first-principles** 和 **fix-root-causes** 原则 skill。
 
-The signal is a *pattern*, not single instances. Tells:
+信号是*模式*，不是单个实例。征兆：
 
-- The same shape of workaround appearing repeatedly across unrelated code.
-- Multiple unrelated edge cases that all need special-case branches.
-- Types that need escape hatches (`any`, casts, optional fields always set in practice) to compile.
-- The "we need a lock" reflex when the sketch said the state wasn't shared.
-- Callers having to know the abstraction's internal rules to use it.
-- Two or more independent Phase D deviations of the same shape across the implementation.
+- 同一形态的 workaround 在互不相关的代码里反复出现。
+- 多个互不相关的边角案例都需要特例分支。
+- 类型需要逃生舱（`any`、cast、实际永远被赋值的 optional 字段）才能编译。
+- 草图说状态没共享，却冒出"我们需要一把锁"的反射。
+- 调用方必须懂抽象的内部规则才用得动它。
+- 实现中出现两个以上同形态的独立 Phase D 偏差。
 
-Use judgment. A few edge cases don't condemn an architecture. Some problems are legitimately complex. Complexity in the data is not complexity in the design.
+用判断力。几个边角案例不至于判架构死刑，有些问题本来就复杂。数据里的复杂度不是设计里的复杂度。
 
-When you scrap:
+推翻时：
 
-1. Re-run the **how** skill over what's been built.
-2. Redesign as if the new constraints had been day-one assumptions, per redesign-from-first-principles.
-3. Subtract before adding, per the **subtract-before-you-add** principle skill. The new sketch should be smaller than the old one before it grows.
-4. Return to Phase B and re-run arena.
+1. 对已建的东西重跑 **how** skill。
+2. 按 redesign-from-first-principles，把新约束当作第一天就有的假设重新设计。
+3. 按 **subtract-before-you-add** 原则 skill 先减后加。新草图在长个儿之前应当比旧的小。
+4. 回 Phase B 重跑 arena。
 
-## Outputs
+## 产出
 
-The caller's usage is written first and the type sketch derived from it. One file with new types and signatures for small changes. Module map plus type definitions for larger work. The rationale ships alongside, shaped per `references/rationale-template.md`, including the usage sketch and the synthesis decision.
+先写调用方的用法，类型草图从它派生。小改动产出一个含新类型和签名的文件；大工作产出模块图加类型定义。rationale 随附，形态按 `references/rationale-template.md`，包含用法草图和综合决策。

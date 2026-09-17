@@ -1,104 +1,103 @@
 ---
 name: automate-me
-description: "Use for \"automate me\", \"create/update/refresh my -mode skill\", \"turn/capture my preferences or working style into a skill\", or wanting agents to follow how the user works. Drafts or revises a personal -mode skill via create-skill + unslop, optionally pulling fresh evidence from recent transcripts."
+description: "用于 “automate me”、“创建/更新/刷新我的 -mode skill”、“把我的偏好或工作风格做成 skill”，或想让 agent 按用户的方式工作。经由 create-skill + unslop 起草或修订一份个人 -mode skill，可选地从最近 transcript 提取新证据。"
 disable-model-invocation: true
 ---
 
 # Automate me
 
-A guided flow for turning the user's working conventions into a skill agents will follow. The output is one `-mode` skill tailored to them (e.g. `jay-mode`, `priya-mode`).
+把用户的工作惯例变成 agent 会遵循的 skill 的引导流程。产出是一份为他量身定制的 `-mode` skill（如 `jay-mode`、`priya-mode`）。
 
-This skill orchestrates three others: an inline mining pass (see step 1), Cursor's built-in `create-skill` (authoring), and the **unslop** skill (prose discipline). It sequences them. It doesn't replace them.
+本 skill 编排另外三个：内联挖掘（见步骤 1）、Cursor 内建 `create-skill`（编写）、**unslop** skill（文字纪律）。它负责排序，不替代它们。
 
-## Flow
+## 流程
 
-### 0. Check for an existing skill
+### 0. 检查已有 skill
 
-Look recursively for `.cursor/skills/**/*-mode/SKILL.md` and `~/.cursor/skills/*-mode/SKILL.md` matching the user's handle. Mode skills can live in a personal category directory (`.cursor/skills/<handle>/`), not only at the top level. If one exists, confirm intent with `AskQuestion` (unless they already said "update my skill" or similar):
+递归查找 `.cursor/skills/**/*-mode/SKILL.md` 和 `~/.cursor/skills/*-mode/SKILL.md` 中匹配用户 handle 的。mode skill 可以住在个人类别目录（`.cursor/skills/<handle>/`），不只顶层。已存在就用 `AskQuestion` 确认意图（除非用户已经说了"update my skill"之类）：
 
-- Update the existing skill (default for repeat runs)
-- Start fresh (rare, ask why before doing it)
+- 更新现有 skill（重复运行的默认）
+- 从零开始（罕见，做之前问为什么）
 
-Update mode changes the rest of the flow:
-- Step 1 mines only history since the skill was last edited (`git log -1 --format=%cI <path>`).
-- Step 2 asks what's changed or missing, not what to capture from zero.
-- Step 4 edits the existing file in place. Preserve sections the user hasn't contradicted. Revise ones with new evidence. Add new sections only for genuinely new rules.
+update 模式会改变后续流程：
+- 步骤 1 只挖 skill 上次编辑以来的历史（`git log -1 --format=%cI <path>`）。
+- 步骤 2 问什么变了、缺什么，而不是从零要捕获什么。
+- 步骤 4 就地编辑现有文件。保留用户没推翻过的小节，修订有新证据的，只为真正的新规则加新节。
 
-### 1. Mine their history
+### 1. 挖掘历史
 
-Locate the active workspace's transcripts before fanning out. The system prompt names the workspace's `agent-transcripts/` directory. Use only that path. Don't glob across `~/.cursor/projects/*/`. That crosses workspace boundaries and reads private chats from unrelated projects.
+fan out 之前先定位当前工作区的 transcript。系统提示里有该工作区的 `agent-transcripts/` 目录，只用那个路径。不要 glob `~/.cursor/projects/*/`——那会跨越工作区边界、读到无关项目的私密聊天。
 
-Survey recent agent conversations within that scope for recurring patterns. Run multiple parallel subagents across slices of history (e.g. last 2-4 weeks, split into 3 slices so each has enough material). Each slice mining subagent reads transcripts from the workspace-scoped path the parent provides, looks for the signals below, and returns a short structured list of patterns it saw with evidence pointers. Default signals worth hunting:
+在该范围内调查最近的 agent 对话找重复模式。并行跑多个 subagent 分片扫历史（如最近 2-4 周，切成 3 片让每片材料够厚）。每个分片挖掘 subagent 读父级提供的工作区路径下的 transcript，找下面的信号，返回它看到的模式的简短结构化清单并附证据指针。默认值得找的信号：
 
-- Response preferences (length, tone, format, "dumb it down" corrections)
-- Delegation habits (subagents, models, specialized workflows, parallelism)
-- Verification posture (what "done" means, unit tests vs live repro, reviewers)
-- Code and prose discipline (style, principles cited, lint/format tools)
-- Process conventions (worktrees, commits, PRs, review/merge tooling)
-- Meta preferences (fixing skills mid-task, proposing new ones)
+- 回复偏好（长度、语气、格式、"说人话"类纠正）
+- 委托习惯（subagent、模型、专门化工作流、并行度）
+- 验证姿态（什么叫"done"、单测 vs 实机复现、reviewer）
+- 代码与文字纪律（风格、引用的原则、lint/format 工具）
+- 流程惯例（worktree、commit、PR、review/merge 工具）
+- meta 偏好（任务中途修 skill、提议新 skill）
 
-Cross-check across slices before elevating a signal. Patterns seen in 2+ slices are high-confidence. Lone signals are weak and usually get dropped.
+提升某个信号之前跨切片交叉验证。出现在 2+ 切片的模式是高置信的；孤立信号很弱，通常丢弃。
 
-### 2. Ask the user directly
+### 2. 直接问用户
 
-Mining misses intent that hasn't come up yet. Use the `AskQuestion` tool (structured multi-choice) rather than asking the user to type from scratch.
+挖掘抓不到还没浮现过的意图。用 `AskQuestion` 工具（结构化多选）而不是让用户徒手敲字。
 
-Shape: one or two questions with 4-6 options each, `allow_multiple: true` for category questions. Start broad ("Which areas matter most?"), then follow up on selected areas with specific options. After the structured rounds, one free-form chat question catches anything the options missed.
+形态：一两道题、每题 4-6 个选项，类别题用 `allow_multiple: true`。先宽泛（"哪些方面最重要？"），再对选中的方面用具体选项追问。结构化轮次之后，一道自由聊天题接住选项漏掉的东西。
 
-Don't dump 20 questions.
+别一次倒 20 道题。
 
-### 3. Cluster findings
+### 3. 聚类发现
 
-Group the combined signals into sections. Common ones (use only what applies):
+把合并的信号分组成小节。常见的（只用适用的）：
 
-- **Response style**: length, tone, format.
-- **Autonomy**: how much to do without asking, MCP tool use.
-- **Understand first**: which skills to reach for when scoping or investigating a change.
-- **Subagents**: default, parallelism, model-to-task, specialized workflows.
-- **Prose / code discipline**: principles, lint tools, style guides.
-- **Review and verify**: repro posture, verification skills, live-testing tools.
-- **Process**: git worktrees, commits, PRs, review/merge tooling.
-- **Skills**: skill-authoring habits, fix-the-skill-first, proposing new skills.
+- **Response style**：长度、语气、格式。
+- **Autonomy**：不问就做多少、MCP 工具使用。
+- **Understand first**：圈定范围或调查改动时先用哪些 skill。
+- **Subagents**：默认值、并行、模型-任务配对、专门化工作流。
+- **Prose / code discipline**：原则、lint 工具、风格指南。
+- **Review and verify**：复现姿态、verification skill、实测工具。
+- **Process**：git worktree、commit、PR、review/merge 工具。
+- **Skills**：写 skill 的习惯、先修 skill 再说、提议新 skill。
 
-The **poteto-mode** skill shows the shape. Read it for granularity. Don't copy its content. The user's rules are not the same as poteto-mode's.
+**poteto-mode** skill 是形态参照。读它拿粒度感，别抄内容——用户的规则和 poteto-mode 的不一样。
 
-### 4. Draft the skill
+### 4. 起草 skill
 
-Use Cursor's built-in `create-skill` skill to author the skill. Placement:
+用 Cursor 内建 `create-skill` skill 来写。放置：
 
-- Path: preserve an existing mode skill's category. For a new mode, use `.cursor/skills/<handle>/<handle>-mode/SKILL.md` when the repo has an established personal category for that handle. Otherwise default to `.cursor/skills/<handle>-mode/SKILL.md` in the project (or `~/.cursor/skills/<handle>-mode/` if the user prefers a personal skill).
-- Handle: the user's first name or chosen identifier.
-- Frontmatter `description`: trigger on their name + `/<handle>-mode` + "work in their style", not on generic keywords like "write code" or "review PR".
-- Frontmatter formatting: follow `create-skill`'s YAML rules. Keep `description` as one YAML scalar. Quote it or use `description: >-` with indented continuation lines when punctuation or wrapping requires it.
-- Frontmatter `disable-model-invocation: true` by default. Opt out only if the user explicitly wants their mode to apply on every turn.
+- 路径：已有 mode skill 保留其类别。新 mode：仓库已为该 handle 建立个人类别时用 `.cursor/skills/<handle>/<handle>-mode/SKILL.md`；否则默认项目里 `.cursor/skills/<handle>-mode/SKILL.md`（用户想要个人 skill 时用 `~/.cursor/skills/<handle>-mode/`）。
+- Handle：用户的名或自选标识。
+- Frontmatter `description`：触发词写"他们的名字 + `/<handle>-mode` + work in their style"，不要写 "write code"、"review PR" 这种泛关键词。
+- Frontmatter 格式：遵守 `create-skill` 的 YAML 规则。`description` 保持单个 YAML scalar；有标点或换行需要时加引号，或用 `description: >-` 加缩进续行。
+- Frontmatter 默认 `disable-model-invocation: true`。只有用户明确想让 mode 每轮都应用时才去掉。
 
-### 5. Iterate on prose
+### 5. 打磨文字
 
-Apply the **unslop** skill and `create-skill`'s writing guidelines to every line.
+对每一行应用 **unslop** skill 和 `create-skill` 的写作指南。
 
-Show the draft to the user and take feedback. Expect multiple iterations. Cut ruthlessly. A mode skill is not a manual.
+把草稿给用户看并收反馈。预期多轮迭代。无情地删。mode skill 不是说明书。
 
-### 6. Land it
+### 6. 落地
 
-Work in a worktree off main. Commit and open a PR. Don't push to main directly.
+在 main 上开的 worktree 里工作。commit 并开 PR。别直接推 main。
 
-## Guardrails
+## 护栏
 
-- **Don't overfit to one conversation.** A preference stated once and contradicted another time is noise. Require multiple instances before codifying it.
-- **Don't be clever.** Restating other skills' contents, inventing metaphors, or writing "poetic" prose for an agent reader is cost without benefit. Keep it operational.
-- **Reference, don't inline.** Other skills the user relies on should appear as path references, not pasted excerpts. Same for any principle docs they maintain elsewhere.
-- **Keep sections minimal.** Only add a section if the user has a specific, non-default rule there. "Communicate clearly" is not a section. "Short paragraphs. Tables when comparing options. Bullets only when items are genuinely parallel." is.
-- **Name conventions generic.** Use "the user" or "the human" in imperatives, not the author's first name.
-- **Don't force symmetry.** If a user has no process rules worth writing down, skip the Process section entirely.
+- **别对单次对话过拟合。** 说过一次又自相矛盾的偏好是噪音。写成规则前要求多个实例。
+- **别抖机灵。** 复述其他 skill 的内容、发明比喻、为 agent 读者写"诗意"散文，都是没收益的成本。保持可操作性。
+- **引用，别内联。** 用户依赖的其他 skill 应以路径引用出现，不贴摘录。他们在别处维护的原则文档同理。
+- **小节保持最小。** 只有用户在某个方向有具体的、非默认的规则才加那节。"Communicate clearly"不算一节；"短段落。对比选项用表。条目真正平行才用 bullet。"算。
+- **惯例写通用的。** 祈使句里用"the user"或"the human"，不用作者的名字。
+- **别强凑对称。** 用户没有值得写下的流程规则，就整节跳过 Process。
 
-## Evaluation
+## 评估
 
-A `-mode` skill is subjective output. A `create-skill`-style test/iterate benchmark loop isn't useful here. Vibe-check with the user: does it read like them? Did it miss anything? Then ship.
+`-mode` skill 是主观产物。`create-skill` 式的 test/iterate benchmark 循环在这里没用。和用户 vibe-check：读起来像不像他？漏了什么？然后交付。
 
-Run a description-optimization loop only if the skill's trigger accuracy turns out to be a problem in practice.
+只有当 skill 的触发准确率在实践中真成了问题，才跑 description 优化循环。
 
-## When not to use
+## 什么时候别用
 
-- User wants a task-specific skill (not working conventions): `create-skill` alone, no mining required.
-- User wants to capture one narrow workflow (e.g. "how I write commit messages"). That's a regular skill, not a mode skill.
-
+- 用户要的是任务专用 skill（不是工作惯例）：单用 `create-skill`，不用挖掘。
+- 用户想捕获一条窄工作流（如"我怎么写 commit message"）。那是普通 skill，不是 mode skill。

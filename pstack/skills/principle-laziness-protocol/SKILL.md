@@ -1,18 +1,18 @@
 ---
 name: principle-laziness-protocol
-description: "Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem."
+description: "在重构、评估 diff 大小、或忍不住想加抽象、层级、信号穿线时应用。偏向删除，偏向能解决问题的最小改动。"
 disable-model-invocation: true
 ---
 
-# Laziness Protocol
+# Laziness Protocol（懒惰协议）
 
-Aim for the most result with the least code and complexity.
+用最少的代码和复杂度，拿最大的结果。
 
-- **Prefer deletion.** When asked to refactor or improve, look for removals before additions.
-- **Maintain a flat call hierarchy.** Avoid deep call chains. A rich interface that hides substantial work is not a deep call chain. If answering a question requires tracing through more than 3 files or layers, flatten it.
-- **Consolidate decisions.** Do not repeat the same choice in several places. Put it behind one source of truth and pass the result as a simple flag.
-- **Minimize the diff.** Make the smallest change that solves the problem. Fewer lines beat "elegant" boilerplate.
-- **Question the threading.** If a task asks you to pass a new signal through types, schemas, pipelines, or similar layers, stop and look for a more direct path.
-- **Sweat the small leaks.** Remove tiny pass-throughs, representation leaks, and duplicated choices before they spread. Small leaks compound into permanent coordination costs.
+- **偏向删除。** 被要求重构或改进时，先找能删的，再看能加的。
+- **保持扁平的调用层级。** 避免深调用链。隐藏了大量工作的富接口不算深调用链。如果回答一个问题需要穿过 3 个以上的文件或层去追踪，就把它压平。
+- **合并决策。** 不要在多处重复同一个选择。放到一个 single source of truth 后面，把结果作为简单 flag 传出去。
+- **最小化 diff。** 做能解决问题的最小改动。少几行胜过"优雅"的样板。
+- **质疑穿线。** 如果任务让你把一个新信号穿过类型、schema、pipeline 之类的层级，停下来找更直接的路径。
+- **计较小漏洞。** 趁微小的透传、表示层泄漏和重复选择还没扩散就删掉它们。小泄漏会复利成永久的协调成本。
 
-**The test:** If a human developer would find the code exhausting to maintain, it is a bad solution.
+**检验：** 如果一个人类开发者会觉得这段代码维护起来很累，那它就是坏方案。

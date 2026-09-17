@@ -1,56 +1,56 @@
 ---
 name: how
-description: "Use for \"how does X work\", code walkthroughs before changing something, and placement / ownership / layering questions (\"where should this live\", \"which package owns this\", \"is this the right layer\"). Explains subsystem architecture, runtime flow, onboarding mental models. Use why for motivation."
+description: "用于“X 是怎么工作的”、改动前的代码走读，以及 placement / ownership / layering 问题（“这东西该放哪”、“哪个 package 拥有它”、“这层对吗”）。解释子系统架构、运行时流程、上手心智模型。动机类问题用 why。"
 disable-model-invocation: true
 ---
 
 # How
 
-Explore the codebase to answer "how does X work?" questions. Produce architectural explanations at the level of a senior engineer onboarding onto a subsystem, enough to build a working mental model, not so much that it reads like annotated source code.
+探索代码库，回答"X 是怎么工作的？"类问题。产出资深工程师带你上手一个子系统那种深度的架构讲解：足以建立可工作的心智模型，又不至于读成带注释的源码。
 
-## Step 1. Assess Complexity
+## Step 1. 评估复杂度
 
-If the scope is ambiguous, state your interpretation and explore. The user can redirect.
+范围含糊时，说出你的理解然后探索。用户可以纠偏。
 
-- **Simple** (a single module, a small utility, a narrow question such as "how does function X work"): no explorers. One explainer explores and explains in a single pass. Go to Step 2b.
-- **Complex** (a subsystem spanning multiple files or services, a cross-cutting feature, a full architectural overview): spawn parallel explorers first, then hand off to the explainer. Go to Step 2a.
+- **简单**（单个模块、小工具、"函数 X 怎么工作"这类窄问题）：不用 explorer。一个 explainer 一遍完成探索和讲解。转 Step 2b。
+- **复杂**（跨多个文件或服务的子系统、横切功能、完整架构概览）：先并行 spawn explorer，再交给 explainer。转 Step 2a。
 
-When in doubt, take the simple path.
+拿不准就走简单路径。
 
-## Step 2a. Explore (complex questions only)
+## Step 2a. 探索（仅复杂问题）
 
-Decompose the question into 2 to 4 exploration angles, each a distinct slice of the subsystem. Spawn all explorers in a single message:
+把问题拆成 2 到 4 个探索角度，每个是子系统的一个不同切片。在一条消息里 spawn 所有 explorer：
 
-- `subagent_type`: `generalPurpose`
-- `model`: your configured how-explorer model (default `grok-4.6-fast-xhigh`)
-- `readonly`: `true`
+- `subagent_type`：`generalPurpose`
+- `model`：你配置的 how-explorer 模型（默认 `grok-4.6-fast-xhigh`）
+- `readonly`：`true`
 
-Each explorer gets the prompt in `references/explorer-prompt.md` with its angle filled in. Then go to Step 3.
+每个 explorer 拿到 `references/explorer-prompt.md` 里的 prompt，填入它自己的角度。然后转 Step 3。
 
-## Step 2b. Direct Explain (simple questions)
+## Step 2b. 直接讲解（简单问题）
 
-Spawn one Task subagent that explores and explains in one pass:
+spawn 一个 Task subagent，一遍完成探索和讲解：
 
-- `subagent_type`: `generalPurpose`
-- `model`: your configured how-explainer model (default `claude-fable-5-1-thinking-max`)
-- `readonly`: `true`
+- `subagent_type`：`generalPurpose`
+- `model`：你配置的 how-explainer 模型（默认 `claude-fable-5-1-thinking-max`）
+- `readonly`：`true`
 
-Build its prompt from `references/explainer-prompt.md` without the explorer-findings section. Go to Step 4.
+从 `references/explainer-prompt.md` 构造它的 prompt，不带 explorer-findings 一节。转 Step 4。
 
-## Step 3. Synthesize (complex questions only)
+## Step 3. 综合（仅复杂问题）
 
-Once all explorers have returned, spawn one Task subagent to synthesize their findings into one explanation:
+所有 explorer 返回后，spawn 一个 Task subagent 把它们的发现综合成一份讲解：
 
-- `subagent_type`: `generalPurpose`
-- `model`: your configured how-explainer model (default `claude-fable-5-1-thinking-max`)
-- `readonly`: `true`
+- `subagent_type`：`generalPurpose`
+- `model`：你配置的 how-explainer 模型（默认 `claude-fable-5-1-thinking-max`）
+- `readonly`：`true`
 
-Build its prompt from `references/explainer-prompt.md` with every explorer's findings filled in.
+从 `references/explainer-prompt.md` 构造它的 prompt，填入每个 explorer 的发现。
 
-## Step 4. Present
+## Step 4. 呈现
 
-Present the explainer's output to the user. Light edits for clarity or context from the conversation are fine. Do not substantially rewrite it.
+把 explainer 的输出呈现给用户。为了清晰或结合对话上下文做轻度编辑可以。不要大幅改写。
 
-## Output Format
+## 输出格式
 
-The explanation uses the sections defined in `references/explainer-prompt.md`, dropping any that do not apply: Overview, Key Concepts, How It Works, Where Things Live, Gotchas.
+讲解使用 `references/explainer-prompt.md` 定义的小节，删掉不适用的：Overview、Key Concepts、How It Works、Where Things Live、Gotchas。

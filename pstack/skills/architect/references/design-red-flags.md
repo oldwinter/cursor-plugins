@@ -1,33 +1,33 @@
-# Design red flags
+# 设计红旗
 
-Screen every candidate before synthesis. A red flag is a reason to revise or reject the shape.
+综合之前筛每个候选。一面红旗就是修订或否决这个形态的理由。
 
-## Shallow module
+## 浅模块
 
-A shallow module exposes a large interface while hiding little complexity. Judge depth by the capability and policy hidden behind the public surface relative to the size of that surface. Prefer a simple interface backed by substantial behavior.
+浅模块暴露大接口却藏不住多少复杂度。按"公共表面背后隐藏的能力和策略"相对"该表面的大小"来判断深浅。优先简单接口背后驮着实质行为的设计。
 
-Do not confuse a deep module with a deep call chain. A deep call chain scatters understanding across layers. A deep module concentrates capability behind one interface.
+别把深模块和深调用链搞混。深调用链把理解散到各层；深模块把能力集中到一个接口后面。
 
-Look for these signs:
+找这些迹象：
 
-- Callers coordinate several methods to complete one operation.
-- Public options expose internal stages or implementation choices.
-- Learning the interface does not save the caller from learning the implementation.
+- 调用方要协调好几个方法才能完成一个操作。
+- 公共选项暴露了内部阶段或实现选择。
+- 学了接口并不能让调用方免于学实现。
 
-## Information leakage
+## 信息泄漏
 
-Information leakage makes multiple modules depend on the same internal decision. A representation, policy, or protocol detail appears in more than one place, so changing it requires coordinated edits.
+信息泄漏让多个模块依赖同一个内部决策。一个表示、策略或协议细节出现在不止一处，改它就需要协调多处编辑。
 
-Public re-exports of transport or wire types are leakage. Parse external data into domain types behind the interface. Keep storage schemas, framework objects, and protocol details private.
+把 transport 或 wire 类型做公共 re-export 就是泄漏。在接口背后把外部数据解析成领域类型。storage schema、框架对象和协议细节保持私有。
 
-## Temporal decomposition
+## 按时间顺序切分
 
-Temporal decomposition organizes modules by execution order instead of the knowledge they own. Separate load, validate, transform, and save stages often repeat one representation and its invariants across several boundaries.
+Temporal decomposition 按执行顺序而不是按模块拥有的知识来组织代码。分开的 load、validate、transform、save 各阶段，常在好几个边界间重复同一个表示及其不变量。
 
-Group code around domain knowledge and ownership. Methods that run at different times can still belong to one module when they protect the same decisions.
+围绕领域知识和 ownership 组织代码。运行在不同时刻的方法，只要守护的是同一批决策，仍可属于同一个模块。
 
-## Pass-through method
+## 透传方法
 
-A pass-through method forwards the same arguments to another method with the same shape. It adds a layer without hiding complexity.
+透传方法把同样的参数原样转发给另一个同形态的方法。它加了一层却没藏住复杂度。
 
-Remove it or move responsibility to the module that can complete the operation. Keep a forwarding boundary only when it adds policy, adaptation, or a distinct abstraction.
+删掉它，或把责任挪给能独立完成操作的模块。只有当转发边界带来策略、适配或独立抽象时才保留它。

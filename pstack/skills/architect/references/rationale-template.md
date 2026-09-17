@@ -1,35 +1,35 @@
-# Rationale template
+# Rationale 模板
 
-The prose that ships alongside the type sketch. One page. Sentence-case headings, no boilerplate. Replace the italic notes with actual content.
+随类型草图一起交付的散文。一页。句子式标题，不要样板。把斜体提示换成实际内容。
 
 ## Problem
 
-*One paragraph. What we're trying to do, and what about the existing system or constraints makes the shape non-obvious. If [Phase A](../SKILL.md#phase-a-ground-the-problem) surfaced constraints the design must honor (existing types to interop with, callers we can't break, invariants that crossed our boundary), name them here so the reader sees the same constraints you saw.*
+*一段。我们想做什么，以及现有系统或约束里是什么让形态不显然。如果 [Phase A](../SKILL.md#phase-a-ground-the-problem) 浮出了设计必须遵守的约束（要互操作的现有类型、不能破坏的调用方、跨过我们边界的不变量），在这里点名，让读者看到你看到的同一批约束。*
 
-## Usage (caller's view)
+## Usage（调用方视角）
 
-*Write this first, before the type sketch. Show the README or quickstart the consumer reads, plus two or three realistic call sites in their own code. What they import, what they call, what comes back. The type sketch in [Shape](#shape) is derived from this. The two must agree. When they diverge, reconcile the sketch to the usage, not the reverse. The caller's experience is the spec. The types serve it.*
+*先写这节，在类型草图之前。展示消费者会读的 README 或 quickstart，外加他们自己代码里两三个真实调用点：import 什么、调用什么、拿回什么。[Shape](#shape) 里的类型草图由此派生。两者必须一致。分歧时，让草图向用法对齐，不是反过来。调用方的体验就是 spec，类型为它服务。*
 
 ## Shape
 
-*The recommended architecture. Data structures first. Then how data flows through the signatures. Name the load-bearing decisions. State which invariants are encoded in types, where validation lives, and what the system deliberately does not do. Judge interface depth explicitly. State what complexity the public surface hides, what remains exposed to callers, and why the interface is no larger than needed. Cite the principle behind each decision (e.g., `per boundary-discipline`). Don't restate it.*
+*推荐的架构。数据结构优先，然后讲数据怎么流过签名。点名承重的决策。说明哪些不变量编码进了类型、校验住在哪、系统刻意不做什么。显式评估接口深度：公共表面藏了什么复杂度、还有什么暴露给调用方、为什么接口不比所需更大。每个决策引用背后的原则（如 `per boundary-discipline`），不要复述原则内容。*
 
 ## Synthesis decision
 
-*Filled in by [arena](../../arena/SKILL.md). Records which candidate became the base and why, what was adapted from each of the others, and what was rejected and why.*
+*由 [arena](../../arena/SKILL.md) 填。记录哪个候选成了 base、为什么，从其他候选各 adapted 了什么，否决了什么、为什么。*
 
 ## Tradeoffs accepted
 
-*One bullet per tradeoff the chosen shape makes. Form: "we accept X in exchange for Y." Name anything a future reader might mistake for an oversight, including things that look like premature optimization or premature simplification.*
+*选定形态做出的每个取舍一条。形式："we accept X in exchange for Y."点名任何未来读者可能误当成疏忽的地方，包括看着像过早优化或过早简化的东西。*
 
 ## Alternatives considered
 
-*Required. Name at least one concrete alternative shape, with one line on why it lost. Judge each alternative on interface depth, not implementation simplicity alone. Name the complexity it exposes to callers and the complexity it hides. Two or three alternatives belong here when the design space had real contenders. One is fine when the constraints forced the answer, with the conclusion phrased as "this was the only viable shape because..." Avoid listing flavors of the same shape. This section covers design alternatives the chosen shape considered and rejected, not other runner candidates.*
+*必填。至少点一个具体替代形态，附一行它为什么输了。按接口深度而不是仅凭实现简单度评价每个替代：点名它暴露给调用方的复杂度和它藏住的复杂度。设计空间真有竞争者时这里该有两三个替代；约束逼出唯一答案时一个就够，结论写成"this was the only viable shape because..."。别列同一形态的几种口味。本节覆盖的是选定形态考虑过又否决的设计替代，不是其他 runner 候选。*
 
 ## Open questions and risks
 
-*Things you noticed during the sketch that the human needs to weigh in on, and risks worth flagging before implementation starts. Phrase as questions, not assertions, so the human's answer is the resolution rather than a comment.*
+*画草图时注意到、需要人类拍板的事，以及实现开始前值得标出的风险。写成问题而不是断言，让人类的回答成为决议而不是评论。*
 
 ## Next implementation step
 
-*The first thing to build against the sketch. One sentence. What you'd start writing immediately after synthesis (or after Phase D sign-off, if a checkpoint was opted into).*
+*对照草图要建的第一件东西。一句话：综合之后（或 Phase D 签字之后，若启用了 checkpoint）你会立刻开始写什么。*

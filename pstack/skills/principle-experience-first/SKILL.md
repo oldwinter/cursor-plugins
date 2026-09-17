@@ -1,19 +1,19 @@
 ---
 name: principle-experience-first
-description: "Apply when product, UX, or feature-scope tradeoffs come up. Choose user delight over implementation convenience; ship fewer polished features over more rough ones."
+description: "当产品、UX 或功能范围的取舍出现时应用。把用户愉悦置于实现便利之上；宁可少交付几个打磨过的功能，也不要多交付一堆粗糙的。"
 disable-model-invocation: true
 ---
 
-# Experience First
+# Experience First（体验优先）
 
-When implementation convenience conflicts with user delight, choose delight.
+当实现便利与用户愉悦冲突时，选愉悦。
 
-- Every feature, control, and option must be justified
-- Ship less, ship better (polished experience with three features beats rough one with ten)
-- Prototype before committing (design decisions are cheaper in throwaway HTML than production code)
-- Get the details right (transitions, alignment, spacing, feedback, error states)
-- Tighten the core loop (every feature should serve the central workflow or get out of the way)
+- 每个功能、控件和选项都必须有存在的理由
+- 少交付，交付好（打磨过的三个功能胜过粗糙的十个）
+- 定案之前先 prototype（用一次性 HTML 做设计决策比在生产代码里做便宜）
+- 把细节做对（过渡、对齐、间距、反馈、错误态）
+- 收紧核心循环（每个功能要么服务主工作流，要么让路）
 
-The user is whoever consumes the work. For a UI that is the end user. For a library or an internal API it is the colleague who imports it. The engineer who maintains the code next is a user too. Weigh their experience the same way, and explain impact from their perspective.
+用户是消费这个工作的人。对 UI 来说是终端用户；对库或内部 API 来说是 import 它的同事；下一个维护这段代码的工程师也是用户。用同样的方式掂量他们的体验，并从他们的视角解释影响。
 
-Foundations should serve the experience. Foundational thinking governs the *sequence* of work. This principle governs the *target*.
+地基应当服务体验。Foundational thinking 管的是工作的*顺序*，本原则管的是*目标*。

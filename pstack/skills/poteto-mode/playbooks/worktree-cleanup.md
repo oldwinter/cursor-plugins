@@ -1,14 +1,14 @@
 ### Worktree and simulator cleanup
 
-**You own the disk and the safety gate.** Prune merged or abandoned git worktrees and stale iOS simulators to reclaim space. Deletion is irreversible, so every step guards against deleting something in use or holding uncommitted work.
+**你拥有磁盘和安全闸。** 修剪已合并或废弃的 git worktree 和过时的 iOS simulator 来回收空间。删除不可逆，所以每一步都防着删掉在用的或持有未提交工作的。
 
-1. Snapshot and audit. Record `df -h /`, then run `scripts/worktree-audit.sh` (principle-build-the-lever). It reads paths from `git worktree list`, never hand-typed, since a hand-typed `myrepo-worktrees/x` misses one that lives at `.cursor/worktrees/myrepo/x` (principle-encode-lessons-in-structure). It classifies each worktree by size, age, merge state, uncommitted work, PR state, and the newest chat that touched it, then suggests a bucket. The transcript scan is slow, so background it.
-2. The bucket is advice, not permission. The pinned and active chats are the real artifact (principle-prove-it-works). Get that set from the user or sidebar and cross-check every candidate. The lever has marked `safe` a worktree the user had pinned, so the pinned set wins.
-3. Verify usage before deleting. For every `verify-recent-chat` row, or anything you doubt, fan subagents out to read the transcripts and report whether the chat is pinned or ongoing and which worktrees it touches (principle-guard-the-context-window, transcripts are bulk). A pinned chat spawns arena and repro trees into sibling worktrees via background subagents, and those are in use even when their names never hit the sidebar.
-4. Pause on irreversible loss. `wip:N` is N tracked uncommitted edits. Show the diff and get a decision first, since removing a clean worktree is recoverable from its branch but uncommitted work is gone. `scratch:N` is untracked throwaway, safe to drop, but name the files. Per Autonomy, clean and merged and not-in-use proceeds. `wip` and in-use pause.
-5. Prune the confirmed set. Per path, `git worktree remove --force <path>`. If the dir survives on ignored build artifacts, `rm -rf` it, then `git worktree prune`. Branch refs survive, so no commits are lost. Confirm with `df -h /` and re-list.
-6. Simulators and other reclaimers. Simulators are usually the next-biggest win. `xcrun simctl --set testing delete all` (XCTestDevices clones), `xcrun simctl delete unavailable`, and `xcrun simctl runtime list` then `runtime delete <id>` for old runtimes. More when needed: Xcode `DerivedData` and `iOS DeviceSupport`, `~/Library/Application Support/Cursor` (`state.vscdb.backup`, and `snapshots/roots/<root>` where a `<root>` named for a folder you opened as a workspace balloons), package caches (pnpm, uv, brew, yarn). Clear only caches the user has not said to keep.
+1. 快照加审计。记录 `df -h /`，然后跑 `scripts/worktree-audit.sh`（principle-build-the-lever）。它从 `git worktree list` 读路径，绝不手打——手打的 `myrepo-worktrees/x` 会漏掉住在 `.cursor/worktrees/myrepo/x` 的那个（principle-encode-lessons-in-structure）。它按大小、龄期、合并状态、未提交工作、PR 状态、最近碰过它的聊天给每个 worktree 归类，然后建议桶。transcript 扫描慢，放后台跑。
+2. 桶是建议不是许可。pin 住的和活动的聊天才是真产物（principle-prove-it-works）。从用户或侧栏拿那个集合，每个候选都对一遍。lever 曾经把用户 pin 着的 worktree 标成 `safe`——所以 pin 集合说了算。
+3. 删之前核实使用。每个 `verify-recent-chat` 行、或任何你存疑的，fan subagent 出去读 transcript，报告该聊天是 pinned 还是进行中、碰哪些 worktree（principle-guard-the-context-window——transcript 是批量数据）。pin 住的聊天会经后台 subagent 把 arena 和 repro 树生进兄弟 worktree，那些在用中——哪怕它们的名字从没上过侧栏。
+4. 不可逆损失前暂停。`wip:N` 是 N 处已跟踪未提交编辑。先展示 diff 并拿到决定——删干净的 worktree 还能从 branch 恢复，未提交的工作没了就没了。`scratch:N` 是未跟踪的丢弃物，安全可删，但点出文件名。按 Autonomy：干净、已合并、不在用的直接删；`wip` 和在用的暂停。
+5. 修剪确认的集合。逐路径 `git worktree remove --force <path>`。目录若因 ignored 构建产物残留，`rm -rf` 它，然后 `git worktree prune`。branch ref 保留，没有 commit 会丢。用 `df -h /` 和重新列表确认。
+6. simulator 和其他回收项。simulator 通常是第二大的赢面。`xcrun simctl --set testing delete all`（XCTestDevices 克隆）、`xcrun simctl delete unavailable`、`xcrun simctl runtime list` 然后 `runtime delete <id>` 清旧 runtime。需要时还有：Xcode 的 `DerivedData` 和 `iOS DeviceSupport`、`~/Library/Application Support/Cursor`（`state.vscdb.backup`，以及 `snapshots/roots/<root>`——以你开成工作区的文件夹命名的 `<root>` 会膨胀）、包缓存（pnpm、uv、brew、yarn）。只清用户没说要留的缓存。
 
-This is the one playbook that deletes user state with no code review to catch a slip, so the gates above are the review.
+这是唯一一本删除用户状态而没有 code review 兜底的 playbook——上面的闸就是 review。
 
-**Reply:** `df -h /` before and after with space reclaimed, the worktrees pruned, and a one-line reason for each held back (in-use by which chat, or uncommitted work).
+**回复：** 前后的 `df -h /` 和回收的空间、删了哪些 worktree、每个留下的附一行原因（哪个聊天在用、或有未提交工作）。

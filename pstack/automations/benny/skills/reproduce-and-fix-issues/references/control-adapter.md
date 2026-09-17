@@ -1,169 +1,169 @@
-# Control-adapter contract
+# Control-adapter 契约
 
-Benny does not know how to start or drive every app. The user must configure one control skill or adapter that implements this contract for the target app.
+Benny 不知道怎么拉起和驱动每个 app。用户必须配置一个为目标 app 实现本契约的 control skill 或 adapter。
 
-Set its skill name in `control.skill_name`.
+把它的 skill 名设进 `control.skill_name`。
 
-Set the completed user-facing feature map path in `control.feature_map_path`. Copy and fill [`feature-map.example.md`](./feature-map.example.md) outside `.cursor/automations/benny/` instead of editing the copied example.
+把完成的用户可见 feature map 路径设进 `control.feature_map_path`。在 `.cursor/automations/benny/` 之外复制填写 [`feature-map.example.md`](./feature-map.example.md)，不要编辑复制过去的例子。
 
-If the skill, feature map, or a required capability is absent, ambiguous, or incomplete, repro and fix work must fail closed.
+skill、feature map 或必需能力缺席、含糊或不完整时，复现和修复工作必须 fail closed。
 
-## Required capabilities
+## 必需能力
 
-### Bring up
+### 拉起
 
-Start the requested app revision in the requested test environment.
+在请求的测试环境里启动请求的 app 修订版。
 
-Input:
+输入：
 
-- Repository and revision
-- Build or start mode
-- Workspace, account, fixture, and feature-state requirements
-- Artifact directory
-- Completed feature-map path
+- 仓库和修订版
+- build 或启动模式
+- workspace、账号、fixture、功能状态要求
+- artifact 目录
+- 完成的 feature-map 路径
 
-Return:
+返回：
 
-- Session identifier
-- How the adapter confirmed the correct app and environment
-- Stable app markers
-- Running process or target details needed by later calls
-- Any missing capability
+- 会话标识符
+- adapter 如何确认正确的 app 和环境
+- 稳定的 app 标记
+- 后续调用需要的运行进程或目标细节
+- 任何缺失的能力
 
-The adapter must distinguish the target app from a similar window, shell, or production instance.
+adapter 必须把目标 app 和相似窗口、shell 或生产实例区分开。
 
-### Drive UI
+### 驱动 UI
 
-Perform real user actions:
+执行真实用户动作：
 
-- Click
-- Type
-- Press keys
-- Scroll
-- Drag
-- Resize
-- Navigate through app controls
+- 点击
+- 打字
+- 按键
+- 滚动
+- 拖拽
+- 缩放
+- 经 app 控件导航
 
-Prefer roles, labels, and stable selectors. Use coordinates only after a fresh screenshot.
+优先 role、label 和稳定 selector。只有新截图之后才用坐标。
 
-Return each action and the observed state change.
+返回每个动作和观察到的状态变化。
 
-Do not set internal state, call hidden app methods, write directly to storage, or inject DOM changes to create the symptom.
+不要设置内部状态、调隐藏 app 方法、直写存储、或注入 DOM 改动来制造症状。
 
-### Drive mapped features and states
+### 驱动已建图的功能和状态
 
-Read the relevant feature-map section before driving the app.
+驱动 app 之前读相关 feature-map 小节。
 
-The adapter must expose ways to:
+adapter 必须暴露途径来：
 
-- Navigate every mapped feature through the user-visible path.
-- Invoke the adapter action names listed for that feature.
-- Interact with default, hover, focus-visible, active, disabled, loading, empty, error, selected, open, expanded, and feature-specific states when they apply.
-- Arrange a state through safe fixture data, permissions, flags, service responses, or supported test controls.
-- Reset the feature for a second independent repro attempt.
-- Capture the screenshot, video, and read-only cross-check named by the feature map.
+- 经用户可见路径导航每个已建图功能。
+- 调用该功能列出的 adapter action 名。
+- 适用时与 default、hover、focus-visible、active、disabled、loading、empty、error、selected、open、expanded 和功能特有状态交互。
+- 经安全 fixture 数据、权限、flag、服务响应或受支持的测试控件安排一个状态。
+- 为第二次独立复现尝试重置该功能。
+- 捕获 feature map 点名的截图、视频和只读交叉核对。
 
-Use roles, accessible names, ARIA relationships, stable component markers, and purpose-named data attributes. Never use generated CSS or StyleX classes, dynamic hashes, child indexes, or brittle DOM position.
+用 role、无障碍名称、ARIA 关系、稳定组件标记和按用途命名的 data 属性。绝不用生成的 CSS 或 StyleX class、动态 hash、子索引或脆弱的 DOM 位置。
 
-Arranging a precondition is not permission to inject the reported symptom. The repro itself must still come from real user interaction.
+安排前置条件不等于许可注入报告的症状。复现本身仍须来自真实用户交互。
 
-### Inspect state
+### 检查状态
 
-Read state to confirm what the UI shows.
+读状态以确认 UI 显示了什么。
 
-Examples:
+例子：
 
-- Accessibility tree
-- DOM or view hierarchy
-- Process state
-- Local logs
-- Network request status
-- App-exposed debug state
+- 无障碍树
+- DOM 或视图层级
+- 进程状态
+- 本地日志
+- 网络请求状态
+- app 暴露的 debug 状态
 
-Inspection is read-only. If a query changes state, it belongs in `drive UI` and must represent a real user action.
+检查是只读的。查询会改状态就归入 `drive UI`，且必须代表真实用户动作。
 
-### Screenshot
+### 截图
 
-Capture the current app state to a requested path.
+把当前 app 状态捕获到请求的路径。
 
-Return:
+返回：
 
-- File path
-- Capture time
-- App marker or window title
-- Short description of what should be visible
+- 文件路径
+- 捕获时间
+- app 标记或窗口标题
+- 应可见内容的短描述
 
-The screenshot must show enough app chrome to prove that the correct app is under test.
+截图必须显示足够的 app 外框来证明被测的是正确的 app。
 
-### Recording
+### 录像
 
-Start and stop a screen recording around the full repro path.
+围绕完整复现路径起停一段录屏。
 
-Return:
+返回：
 
-- File path
-- Start and stop times
-- Captured window or region
-- Whether audio or sensitive overlays were omitted
+- 文件路径
+- 起止时间
+- 捕获的窗口或区域
+- 是否略去了音频或敏感悬浮层
 
-The recording must show the discriminating final state, not only setup or a loading screen.
+录像必须显示判别性的最终状态，不是只有 setup 或加载画面。
 
-### Cleanup
+### 清理
 
-Stop processes and sessions created by the adapter.
+停掉 adapter 创建的进程和会话。
 
-Remove disposable:
+移除一次性的：
 
-- Browser or app profiles
-- Temporary workspaces
-- Test accounts or fixtures when the adapter created them
-- Debug ports and tunnels
-- Captures past their retention window
+- 浏览器或 app profile
+- 临时 workspace
+- adapter 创建的测试账号或 fixture
+- debug 端口和隧道
+- 过了保留窗口的捕获物
 
-Return what was stopped, removed, retained, or left for a person.
+返回停掉、移除、保留或留给人处理的内容。
 
-Cleanup must not delete user work.
+清理不得删除用户工作。
 
-## Adapter behavior
+## Adapter 行为
 
-The adapter must:
+adapter 必须：
 
-- Report capabilities before the repro starts.
-- Report which feature-map sections it can drive and which are blocked.
-- Use the same environment inputs for baseline and patched builds.
-- Surface startup failures as failures.
-- Bound retries.
-- Keep secrets out of logs and artifacts.
-- Keep captures outside the repository.
-- Support a fresh or reset state between the two repro attempts.
-- Avoid production changes unless the user explicitly configured a safe test action.
+- 复现开始前报告能力。
+- 报告哪些 feature-map 小节能驱动、哪些受阻。
+- baseline 和打过补丁的 build 用同一组环境输入。
+- 启动失败要表面化为失败。
+- 重试要有界。
+- secret 不进日志和材料。
+- 捕获物留在仓库之外。
+- 两次复现尝试之间支持 fresh 或重置状态。
+- 除非用户显式配置了安全测试动作，避免生产改动。
 
-## Environment translation
+## 环境转译
 
-Before declaring an environment block, restate the defect without platform-specific nouns and ask whether the same behavior can be tested safely in the available environment.
+宣布环境受阻之前，用不带平台专属名词的方式重述缺陷，问同一行为能否在可用环境里安全测试。
 
-Examples:
+例子：
 
-- A named browser may mean any external browser.
-- A named key may mean the configured shortcut.
-- A named remote host may mean a delayed or disconnected remote target.
+- 点名的浏览器可能意味着任何外部浏览器。
+- 点名的按键可能意味着配置的快捷键。
+- 点名的远程主机可能意味着延迟或断连的远程目标。
 
-Use a translated attempt only when it tests the same underlying behavior. Label it as translated evidence. Do not call it an exact repro when the missing environment is part of the defect.
+转译尝试只在测试同一底层行为时使用。标为转译证据。缺失环境本身是缺陷一部分时，不要称之为精确复现。
 
-Hardware prompts, operating-system permission dialogs, device-only APIs, and unavailable account states may be real blocks.
+硬件弹窗、操作系统权限对话框、设备专属 API 和不可用的账号状态可能是真的阻碍。
 
-## Setup check
+## Setup 检查
 
-Before enabling the repro automation, run one harmless adapter check:
+启用复现 automation 之前，跑一次无害的 adapter 检查：
 
-1. Bring up the app.
-2. Confirm the stable app marker.
-3. Load one completed feature-map section.
-4. Navigate to that feature through its user path.
-5. Exercise one disposable state through mapped adapter actions.
-6. Inspect the resulting state.
-7. Capture a screenshot.
-8. Record a short clip.
-9. Clean up.
+1. 拉起 app。
+2. 确认稳定 app 标记。
+3. 加载一节完成的 feature map。
+4. 经其用户路径导航到该功能。
+5. 经已建图 adapter action 操练一个可丢弃状态。
+6. 检查产生的状态。
+7. 截图。
+8. 录一小段。
+9. 清理。
 
-Enable repro work only when all nine steps succeed and no source-channel Slack post is involved.
+九步全成且不涉及源频道 Slack 发帖，才启用复现工作。

@@ -1,25 +1,25 @@
 ### Eval
 
-**You own the experiment design. Plan, blind, run, synthesize.**
+**你拥有实验设计。规划、盲化、运行、综合。**
 
-**Non-negotiables for blinding:**
+**盲化的不可谈判项：**
 
-- No `eval`, `test`, `judge`, `experiment`, `rubric`, `score`, `compare`, `benchmark`, `candidate`, or `arena` in any directory, file, or prompt the candidate sees.
-- The candidate prompt looks like an organic user request. State the goal, not the meta.
-- No chain-eliciting cues. Don't ask the candidate to list which skills, principles, or files they applied. Ask for design notes generally and grade chain-following from code shape, not self-report.
-- Sanitize directory and slug names. Use project-shaped names a user might pick.
-- Don't tell the candidate other candidates exist.
-- The judge can know it's judging but sees outputs by sanitized label only, never by model name.
-- Comparing two variants: one judge scores both sets in a single pass on one scale, blind to which set each came from.
+- 候选者能看到的任何目录、文件或 prompt 里都不许出现 `eval`、`test`、`judge`、`experiment`、`rubric`、`score`、`compare`、`benchmark`、`candidate`、`arena`。
+- 候选 prompt 看着要像自然的用户请求。说目标，不说 meta。
+- 不留诱供线索。别让候选者列自己应用了哪些 skill、原则或文件。泛泛要设计笔记，链式遵循从代码形态打分，不从自报打。
+- 清洗目录名和 slug 名。用用户真会起的项目式名字。
+- 别告诉候选者还有其他候选者。
+- 裁判可以知道自己在评，但只能看到清洗标签下的输出，永远看不到模型名。
+- 对比两个变体：一个裁判在单轮里用同一把尺子给两套打分，对每套来自哪边保持盲。
 
-**Steps:**
+**步骤：**
 
-1. **Frame.** State what variant is under test and what behavior counts as success. Write the rubric (3-6 concrete criteria) for the judge only. Hold it back from candidates.
-2. **Set up sanitized environments.** Per-candidate working dir with the variant in place. Plant any context an organic task would have: a project skeleton, the skills the candidate would naturally read.
-3. **Author one organic prompt.** What a user would type. No leakage of what's being measured.
-4. **Spawn N parallel candidates** on different models per the **arena** skill's Phase B. Each works in its own sanitized dir. Same prompt to each.
-5. **Spawn one blinded judge** on a different model family per the **arena** skill's Phase C. Judge sees outputs by sanitized label and the rubric, never a model name.
-6. **Verify the chain from transcripts, not self-report.** Read each candidate's local transcript under the active workspace's `agent-transcripts/` directory (the system prompt names this path). Do not glob across `~/.cursor/projects/*/`. That crosses workspace boundaries and reads private chats from unrelated projects. Look at which files each candidate actually opened. Grade chain-following from the files it really read plus the shape of the code, never from the candidate's own claims.
-7. **Read every candidate output yourself** end to end. Compare to the judge's verdict. Disagreement means a model is biased or the rubric is ambiguous. Synthesize.
+1. **Frame.** 说明在变测的是哪个变体、什么行为算成功。给裁判写 rubric（3-6 条具体标准）。对候选者保密。
+2. **搭清洗过的环境。** 每候选者一个工作目录，变体就位。植入自然任务该有的上下文：项目骨架、候选者自然会读到的 skill。
+3. **写一个自然的 prompt。** 用户会敲的那种。不泄漏在测什么。
+4. **Spawn N 个并行候选者**，按 **arena** skill 的 Phase B 用不同模型。各自在自己的清洗目录里干活。每个拿同一份 prompt。
+5. **Spawn 一个盲裁判**，按 **arena** skill 的 Phase C 用不同模型族。裁判只看清洗标签下的输出和 rubric，永远看不到模型名。
+6. **从 transcript 验证链条，不从自报。** 读当前工作区 `agent-transcripts/` 目录下每个候选者的本地 transcript（系统提示里有路径）。不要 glob `~/.cursor/projects/*/`——那会跨越工作区边界、读到无关项目的私密聊天。看每个候选者实际打开了哪些文件。链式遵循按它真读过的文件加代码形态打分，绝不按候选者自己的声称。
+7. **亲自端到端读完每个候选者的输出**。和裁判判定对比。分歧意味着某个模型有偏或 rubric 含糊。综合。
 
-**Reply:** variant under test, rubric, per-candidate notes, judge's verdict, your synthesis, and a recommendation for whether to promote the variant.
+**回复：** 在测的变体、rubric、逐候选者笔记、裁判判定、你的综合、以及是否推广该变体的建议。

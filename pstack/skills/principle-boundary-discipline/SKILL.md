@@ -1,34 +1,34 @@
 ---
 name: principle-boundary-discipline
-description: "Apply when wiring validation, error handling, or framework adapters. Concentrate guards at system boundaries (CLI, config, network, external APIs); trust internal types and keep business logic in pure functions."
+description: "在接入校验、错误处理或框架 adapter 时应用。把守卫集中在系统边界（CLI、config、network、外部 API）；信任内部类型，把业务逻辑留在纯函数里。"
 disable-model-invocation: true
 ---
 
-# Boundary Discipline
+# Boundary Discipline（边界纪律）
 
-Place validation, type narrowing, and error handling at system boundaries. Trust internal code unconditionally. Business logic lives in pure functions. The shell is thin and mechanical.
+把校验、类型收窄和错误处理放在系统边界上。无条件信任内部代码。业务逻辑住在纯函数里。外壳要薄而机械。
 
-**Why:** Scattered validation is noisy, redundant, and gives a false sense of safety. Keep logic out of framework wiring so it can be tested without the framework.
+**为什么：** 散落的校验嘈杂、冗余，还制造虚假安全感。让逻辑远离框架布线，才能脱离框架测试它。
 
-**The pattern:**
-- **At boundaries** (CLI args, config files, external APIs, network protocols): validate, return errors, handle defensively.
-- **Inside the system:** typed data, error propagation, no re-validation. Trust the types.
-- **Across the boundary.** Expose domain concepts, not the boundary's private representation. Keep general-purpose mechanism inside and special-purpose policy at the edge.
+**模式：**
+- **在边界上**（CLI 参数、config 文件、外部 API、网络协议）：校验、返回错误、防御性处理。
+- **在系统内部：** 类型化数据、错误传播、不重复校验。信任类型。
+- **跨越边界时：** 暴露领域概念，而不是边界的私有表示。通用机制留在内部，专用策略放在边缘。
 
-**Applications:**
+**应用：**
 
-Validation and error handling:
-- Validate config at parse time (the boundary), not inside business logic
-- Parse raw data into domain types at the boundary
-- Do not re-export transport, storage, framework, or wire types through the public surface
-- No redundant nil checks deep in call chains if the boundary already validated
+校验与错误处理：
+- 在解析时校验 config（边界），而不是在业务逻辑内部
+- 在边界把原始数据解析成领域类型
+- 不要把 transport、storage、框架或 wire 类型通过公共表面再导出
+- 边界已校验过，就不在调用链深处做冗余 nil check
 
-Code organization:
-- Business logic in pure functions with no framework dependencies
-- Parse functions: pure transforms from raw bytes to typed state
-- Prompt construction: structured state in, string out
-- Scoring and assessment: pure transforms from state to results
+代码组织：
+- 业务逻辑放进不依赖框架的纯函数
+- parse 函数：从原始字节到类型化状态的纯变换
+- prompt 构造：结构化状态进，字符串出
+- 评分与评估：从状态到结果的纯变换
 
-**The tests:**
-- "Is this data crossing a system boundary right now?" If not, validation is redundant.
-- "Can this be a pure function that the shell just calls?" If yes, extract it.
+**检验：**
+- "这份数据此刻正在跨越系统边界吗？" 如果不是，这次校验就是冗余。
+- "这能不能是一个外壳只管调用的纯函数？" 如果能，就把它提取出来。

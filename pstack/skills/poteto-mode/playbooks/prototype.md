@@ -1,14 +1,14 @@
 ### Prototype
 
-**You own the design decision, not the code. The prototype is a throwaway instrument. The real build follows Feature.**
+**你拥有设计决策，不是代码。原型是丢弃式仪器。真正的构建走 Feature。**
 
-The one playbook where the Laziness Protocol's "smallest change" and the verification bar invert. Speed over polish, code quality does not matter, no planning. The rigor is in picking the right design cheaply. Propose variations the user didn't ask for, throw an approach away and try another.
+唯一一本 Laziness Protocol 的"最小改动"和验证门槛倒过来的 playbook。速度优先于打磨，代码质量不重要，不做规划。严格度在"廉价地选对设计"。主动提出用户没要的变体，扔掉一个方案再试另一个。
 
-1. Scope the decision the prototype exists to make: which layout, which interaction, which density, or for an empirical fork which behavior, timing, or approach. No decision means no prototype. Route to Feature.
-2. Gather references when the design space is open. Search for prior art, summarize a moodboard of themes, palettes, and layouts, let the user pick directions before building. Skip when the direction is set.
-3. Build throwaway in an isolated scratch dir, separate from production source. For a visual decision, vanilla HTML/CSS/JS or the lightest stack that renders the idea, CDN deps, a dev server with hot reload. For a behavioral or timing decision, the smallest script that exercises the question. No production framework, no tests, no abstractions.
-4. When comparing alternatives, build them behind one switcher (buttons or a keypress), each variant labeled. This is the **exhaust-the-design-space** principle skill made cheap.
-5. Verify on the matching surface. For a visual decision, screenshot each variant via the control skill and drive the interaction. For a behavioral or timing decision, observe the thing you are deciding by logging the timing, printing the output, or watching the render. The observation is the test here, not an assertion.
-6. Present alternatives, tradeoffs, and a recommendation. The output is the decision plus the throwaway artifact, not shippable code. Hand the chosen direction to **Feature** (or `architect` for the shape) for the real build.
+1. 圈定原型要做出的决策：哪种布局、哪种交互、哪种密度；实证分岔时是哪种行为、时序或做法。没有决策就没有原型——路由去 Feature。
+2. 设计空间开放时收集参照。搜 prior art，把主题、配色、布局汇成一份 moodboard 摘要，让用户先挑方向再动手。方向已定就跳过。
+3. 在与生产源码隔离的临时目录里做丢弃式构建。视觉决策用 vanilla HTML/CSS/JS 或能渲染出想法的最轻栈、CDN 依赖、带 hot reload 的 dev server。行为或时序决策用能操练该问题的最小脚本。不上生产框架、不写测试、不造抽象。
+4. 对比备选时把它们建在一个切换器后面（按钮或按键），每个变体带标签。这是廉价版的 **exhaust-the-design-space** 原则 skill。
+5. 在匹配的 surface 验证。视觉决策经 control skill 给每个变体截图并驱动交互。行为或时序决策直接观察你要定的东西：记时序、打输出、看渲染。这里观察本身就是测试，不是断言。
+6. 摆出备选、取舍和建议。产出是决策加丢弃式产物，不是可交付代码。选定方向交给 **Feature**（或 `architect` 定形态）做真正的构建。
 
-**Reply:** the variants explored, the evidence (screenshots for a visual decision, the observed output or timing for a behavioral one), tradeoffs, your recommendation, and the scratch path. Say plainly that the prototype is throwaway.
+**回复：** 探过的变体、证据（视觉决策给截图，行为决策给观察到的输出或时序）、取舍、你的建议、临时目录路径。明说原型是丢弃式的。

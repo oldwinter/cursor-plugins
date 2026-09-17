@@ -4,36 +4,36 @@ description: Configure Benny and prepare its triage and repro automations. Use w
 disable-model-invocation: true
 ---
 
-# Set up Benny
+# 设置 Benny
 
-Benny ships as a dormant automation pack inside pstack. The plugin manifest exposes only pstack's normal skill root; this file and the two operational files are not slash skills.
+Benny 以休眠 automation pack 的形式随 pstack 分发。plugin manifest 只暴露 pstack 的常规 skill 根目录；本文件和两份 operational 文件不是 slash skill。
 
-The human enters setup by pointing Cursor at the pack's `FOR_AGENTS.md`. The bootstrap flow copies the whole pack into the target repository, then reads this file directly at `.cursor/automations/benny/skills/setup-benny/SKILL.md`.
+人类通过把 Cursor 指向 pack 的 `FOR_AGENTS.md` 进入 setup。bootstrap 流程把整个 pack 复制进目标仓库，然后直接读 `.cursor/automations/benny/skills/setup-benny/SKILL.md` 处的本文件。
 
-Benny needs external configuration and two live Cursor automations.
+Benny 需要外部配置和两个线上 Cursor automation。
 
-Do not create or update an automation until the user explicitly asks. Never put a secret value in plugin files, prompts, or committed configuration.
+用户明确要求之前不要创建或更新 automation。绝不把 secret 值放进 plugin 文件、prompt 或提交的配置。
 
-## 1. Copy the pack and enable shared pstack skills
+## 1. 复制 pack 并启用共享 pstack skill
 
-Do this before asking for Benny configuration and before invoking the built-in `/automate` skill.
+在问 Benny 配置之前、调用内建 `/automate` skill 之前做这步。
 
-Ask which repository will run the automations. The source pack is the directory containing `FOR_AGENTS.md`. The destination is `<target-repository>/.cursor/automations/benny/`.
+问哪个仓库将运行这些 automation。源 pack 是包含 `FOR_AGENTS.md` 的目录。目标是 `<target-repository>/.cursor/automations/benny/`。
 
-Merge the entire source pack into the destination:
+把整个源 pack 合并进目标：
 
-1. Create the destination when it is absent.
-2. Copy every source file to the same relative path.
-3. Preserve destination-only files. Never delete unrelated files during install or refresh.
-4. Keep user-owned configuration, feature maps, and routing maps outside the destination. Never overwrite them.
-5. When an existing source-managed file differs, inspect the diff and merge without discarding local edits. If ownership is ambiguous, stop and ask before replacing it.
-6. Verify that the destination contains `FOR_AGENTS.md`, this setup file, both operational files, their references, and the templates.
+1. 目标不存在就创建。
+2. 每个源文件复制到相同的相对路径。
+3. 保留仅目标端存在的文件。安装或刷新时绝不删无关文件。
+4. 用户拥有的配置、feature map、routing map 放在目标之外。绝不覆盖。
+5. 源管理路径上的既有文件不同时，检查 diff 并合并且不丢弃本地编辑。归属含糊就停下问，别替换。
+6. 核实目标里有 `FOR_AGENTS.md`、本 setup 文件、两份 operational 文件、它们的 references 和 templates。
 
-If this file is already being read from the target destination, treat the copy as complete and run the same verification before continuing.
+如果本文件正是从目标位置被读的，把复制视为完成，继续之前跑同样的核实。
 
-Add pstack to the target repository's `.cursor/settings.json`. If the file or `.cursor` directory does not exist, create it.
+把 pstack 加进目标仓库的 `.cursor/settings.json`。文件或 `.cursor` 目录不存在就创建。
 
-Merge this entry into the existing JSON or JSONC:
+把这条目合并进现有 JSON 或 JSONC：
 
 ```json
 {
@@ -43,9 +43,9 @@ Merge this entry into the existing JSON or JSONC:
 }
 ```
 
-Preserve every unrelated top-level setting and every other plugin entry. If `plugins.pstack` already exists, change only its `enabled` value. Preserve comments and valid JSONC syntax when the file uses JSONC. Validate the file after editing it.
+保留每个无关顶层设置和其他 plugin 条目。`plugins.pstack` 已存在就只改它的 `enabled` 值。文件用 JSONC 时保留注释和合法 JSONC 语法。编辑后校验文件。
 
-Reload the target project or start a fresh agent rooted there. Verify that these shared pstack skills resolve from project scope:
+重载目标项目或在那里起一个 fresh agent。核实这些共享 pstack skill 能从项目 scope 解析：
 
 - `how`
 - `why`
@@ -58,209 +58,209 @@ Reload the target project or start a fresh agent rooted there. Verify that these
 - `principle-fix-root-causes`
 - `principle-prove-it-works`
 
-Do not count a skill loaded from the current session or a user-scoped plugin. The check must show that a fresh agent in the target repository receives pstack through project settings.
+当前会话加载的或 user-scope plugin 的不算数。检查必须证明目标仓库里的 fresh agent 通过项目设置拿到 pstack。
 
-If project-scoped plugin installation is unavailable or any shared dependency does not resolve, stop and explain the failure.
+项目级 plugin 安装不可用、或任何共享依赖解析不了，停下并说明失败。
 
-The Benny files are read directly from `.cursor/automations/benny/`. Do not add that directory to a plugin manifest or expect its `SKILL.md` files to appear in the slash-skill list.
+Benny 文件从 `.cursor/automations/benny/` 直接读。不要把该目录加进 plugin manifest，也别指望它的 `SKILL.md` 出现在 slash-skill 列表里。
 
-Tell the user that `.cursor/settings.json`, `.cursor/automations/benny/`, and any referenced secret-free configuration must be committed before either automation is enabled. Do not commit them unless the user asks.
+告诉用户：启用任一 automation 之前必须提交 `.cursor/settings.json`、`.cursor/automations/benny/` 和任何被引用的无 secret 配置。用户没让就别提交。
 
-Once this check passes, live automation prompts may read the committed operational files by their stable repository-relative paths. They must not embed a plugin cache path or copy the file contents.
+检查通过后，线上 automation prompt 可以按稳定的仓库相对路径读提交的 operational 文件。不得内嵌 plugin 缓存路径或复制文件内容进 prompt。
 
-## 2. Adapt the configuration
+## 2. 改写配置
 
-Open these copied examples:
+打开这两个复制过去的例子：
 
 - `../../templates/configuration.example.yaml`
 - `../reproduce-and-fix-issues/references/feature-map.example.md`
 
-Create user-owned copies outside `.cursor/automations/benny/`. These are configuration files, not pack files. Example locations:
+在 `.cursor/automations/benny/` 之外创建用户拥有的副本。它们是配置文件不是 pack 文件。示例位置：
 
-- Project config, such as `.cursor/benny/configuration.yaml`
-- Project feature map, such as `.cursor/benny/feature-map.md`
-- Project routing map, such as `.cursor/benny/routing.md`
-- User config, such as `~/.config/benny/configuration.yaml`
-- User feature map, such as `~/.config/benny/feature-map.md`
+- 项目配置，如 `.cursor/benny/configuration.yaml`
+- 项目 feature map，如 `.cursor/benny/feature-map.md`
+- 项目 routing map，如 `.cursor/benny/routing.md`
+- 用户配置，如 `~/.config/benny/configuration.yaml`
+- 用户 feature map，如 `~/.config/benny/feature-map.md`
 
-Fill one feature-map section for every user-facing feature the automation may reproduce. Keep it at the user point of view. Do not freeze implementation details or current code paths in the map.
+为 automation 可能要复现的每个用户可见功能填一节 feature map。保持用户视角。不要在 map 里冻结实现细节或当前代码路径。
 
-Do not edit the copied examples. Pack refreshes may update source-managed files after conflict review, but they must never touch the user-owned copies.
+不要编辑复制过去的例子。pack 刷新可在冲突 review 后更新源管理文件，但绝不碰用户拥有的副本。
 
-Prefer committed, secret-free files in the target repository when a fresh automation checkout must read them. Otherwise paraphrase the required values into the live prompt. Reference a repository file only after the built-in `/automate` skill confirms that the file is committed in the repository where the automation runs.
+当 fresh automation checkout 必须读这些文件时，优先目标仓库里提交的无 secret 文件。否则把所需值转述进线上 prompt。只有内建 `/automate` skill 确认文件已提交在 automation 运行的同一仓库后才引用仓库文件。
 
-Use stable repository-relative paths for committed pack and configuration files. Never reference the plugin source directory or a plugin cache path from a live automation.
+提交的 pack 和配置文件用稳定的仓库相对路径。线上 automation 绝不引用 plugin 源目录或 plugin 缓存路径。
 
-## 3. Fill the required choices
+## 3. 填必填选项
 
-Ask for or confirm:
+问或确认：
 
-- Source Slack channel ID
-- Optional operations or status channel ID
-- Repository URL and default branch
-- Triage identity or Slack user ID
-- Issue tracker type, team, project, labels, and intake status
-- Tracker adapter skill or MCP actions
-- Optional routing map path
-- Required control skill name
-- Required user-facing feature-map path
-- Status emoji strings
-- Pull request URL format
-- Polling and effort budgets
-- Model slug for triage, repro, code work, and media review
+- 源 Slack 频道 ID
+- 可选 operations 或状态频道 ID
+- 仓库 URL 和默认分支
+- 分诊身份或 Slack 用户 ID
+- issue tracker 类型、team、project、label、intake status
+- tracker adapter skill 或 MCP action
+- 可选 routing map 路径
+- 必需的 control skill 名
+- 必需的用户可见 feature-map 路径
+- 状态 emoji 字符串
+- PR URL 格式
+- 轮询和 effort 预算
+- 分诊、复现、代码工作、媒体 review 的模型 slug
 
-Use only model slugs shown as available in the user's Cursor model picker or supported model list. Do not guess a slug and do not carry over a private default.
+只用用户 Cursor model picker 或受支持模型列表里显示可用的模型 slug。不要猜 slug，不要沿用私有默认值。
 
-The source channel, triage identity, repository, tracker adapter, control skill, and feature map must be explicit. Fail setup if any required value stays ambiguous.
+源频道、分诊身份、仓库、tracker adapter、control skill、feature map 必须显式。任何必填值含糊就让 setup 失败。
 
-Use pstack's `unslop` skill on the final automation names, descriptions, and prompt shims before saving them.
+最终的 automation 名字、描述和 prompt shim 保存之前过 pstack 的 `unslop` skill。
 
-## 4. Check integration capabilities
+## 4. 检查集成能力
 
-The triage automation needs:
+分诊 automation 需要：
 
-- Read access to the configured source Slack channel and its threads
-- Thread-reply access in that channel
-- Attachment metadata and file download access when reports include media
-- Search, read, create, and update access through the configured issue-tracker adapter
+- 配置的源 Slack 频道及其 thread 的读权限
+- 该频道的 thread 回复权限
+- 报告带媒体时的附件元数据和文件下载权限
+- 经配置的 issue-tracker adapter 的搜索、读、创建、更新权限
 
-The repro automation needs:
+复现 automation 需要：
 
-- Read access to the source thread
-- Thread-reply access in the source channel
-- Optional post and edit access in the configured operations channel
-- Repository read and history access
-- A pull request action that can open a draft pull request
-- The configured control-adapter skill
+- 源 thread 读权限
+- 源频道 thread 回复权限
+- 可选：配置的 operations 频道发和编辑权限
+- 仓库读和历史访问
+- 能开 draft PR 的 pull request action
+- 配置的 control-adapter skill
 
-Prefer configured Cursor Slack actions for reads and posts. The optional `BENNY_SLACK_BOT_TOKEN` may fill a narrow gap such as editing one operations status message or downloading an attachment. Store the value in a secret manager or environment, not in YAML.
+读和发优先配置的 Cursor Slack action。可选 `BENNY_SLACK_BOT_TOKEN` 只填窄缺口，比如编辑那一条 operations 状态消息或下载附件。值放 secret manager 或环境变量，不放 YAML。
 
-Do not use undocumented integration endpoints.
+不要用未文档化的集成端点。
 
-## 5. Prepare the routing map
+## 5. 准备 routing map
 
-If the user wants reroutes or owner pings:
+用户要转路由或 owner ping 时：
 
-1. Copy `../triage-issue-reports/references/routing.example.md` outside `.cursor/automations/benny/`.
-2. Replace every placeholder with public or organization-local values.
-3. Keep owner pings off by default.
-4. Allow a ping only for a configured feature owner or a confirmed likely regression author.
+1. 把 `../triage-issue-reports/references/routing.example.md` 复制到 `.cursor/automations/benny/` 之外。
+2. 每个占位符换成公开的或组织内部的值。
+3. owner ping 默认关。
+4. 只对配置的功能 owner 或已确认的可能回归作者允许 ping。
 
-If no routing map is configured, triage may classify a report but must not guess a destination or owner.
+没配 routing map 时，分诊可以归类报告但不得猜目的地或 owner。
 
-## 6. Verify the control adapter
+## 6. 验证 control adapter
 
-Read `../reproduce-and-fix-issues/references/control-adapter.md` and the user's completed feature map.
+读 `../reproduce-and-fix-issues/references/control-adapter.md` 和用户完成的 feature map。
 
-Confirm that the named skill can:
+确认点名的 skill 能：
 
-- Bring up the target app
-- Navigate every mapped feature through the real UI
-- Exercise mapped states through declared adapter actions
-- Inspect state without forcing the result
-- Capture screenshots
-- Start and stop a recording
-- Clean up its processes and temporary data
+- 拉起目标 app
+- 经真实 UI 走完每个已建图功能
+- 经声明的 adapter action 操练已建图状态
+- 不强造结果地检查状态
+- 截图
+- 起停录屏
+- 清理自己的进程和临时数据
 
-If any capability is missing, leave the repro automation disabled. It must fail closed rather than claim a reproduction it did not perform.
+缺任何能力，repro automation 保持禁用。它必须 fail closed，而不是声称做了没做的复现。
 
-## 7. Prepare the live automations
+## 7. 准备线上 automation
 
-Ask whether this is first-time creation or configuration of existing automations.
+问是首次创建还是配置既有 automation。
 
-Read `../../FOR_AGENTS.md` from the copied pack as the primary user-intent source for either path. Use it to understand the two triggers, tools, instructions, outcomes, and shared rules.
+两条路都把复制 pack 里的 `../../FOR_AGENTS.md` 当主要用户意图来源。用它理解两个触发、工具、指令、产出和共享规则。
 
-### First-time creation
+### 首次创建
 
-Create one automation at a time.
+一次创建一个 automation。
 
-For each automation:
+每个 automation：
 
-1. Read the matching copied prompt template as secondary internal source material.
-2. Turn `FOR_AGENTS.md`, the finished Benny configuration, and the template intent into a complete natural-language request.
-3. Tell the live prompt to read and follow its exact committed operational file under `.cursor/automations/benny/`.
-4. Use the stable repository-relative path, not a plugin source or cache path. Do not copy the operational file contents into the live prompt.
-5. Read and follow the built-in `automate` skill.
-6. Let `automate` discover Slack channels, the repository, and connected integrations.
-7. Let `automate` confirm that the copied pack and any referenced configuration files are committed in the same repository where the automation will run.
-8. Let `automate` show its draft table, obtain approval, ask readiness, and open the Automations editor.
-9. Finish the editor handoff for this automation before starting the next one.
+1. 读对应的复制 prompt 模板作为次要内部素材。
+2. 把 `FOR_AGENTS.md`、完成的 Benny 配置和模板意图转成一份完整的自然语言请求。
+3. 告诉线上 prompt 读并遵循 `.cursor/automations/benny/` 下它那份确切的已提交 operational 文件。
+4. 用稳定的仓库相对路径，不是 plugin 源或缓存路径。别把 operational 文件内容复制进线上 prompt。
+5. 读并遵循内建 `automate` skill。
+6. 让 `automate` 发现 Slack 频道、仓库和已连接集成。
+7. 让 `automate` 确认复制的 pack 和引用的配置文件已提交在 automation 将运行的同一仓库。
+8. 让 `automate` 展示草稿表、取得批准、问就绪、打开 Automations 编辑器。
+9. 完成这个 automation 的编辑器交接再开始下一个。
 
-Give `automate` this complete triage intent, filled from configuration:
+给 `automate` 这份完整的分诊意图，按配置填：
 
-- Name `benny-triage`.
-- Read and follow `.cursor/automations/benny/skills/triage-issue-reports/SKILL.md` for every run.
-- Trigger on each new top-level report in the configured source Slack channel.
-- Read the triggering thread and reply only inside it.
-- Use the configured issue-tracker integration.
-- Classify, inspect evidence, trace cause, dedupe, and create only clear new bugs.
-- End one thread-only verdict with the configured `[benny:bug]`, `[benny:performance]`, or `[benny:other]` marker and optional tracker URL.
-- Never post a source-channel root message.
+- 名字 `benny-triage`。
+- 每次运行读并遵循 `.cursor/automations/benny/skills/triage-issue-reports/SKILL.md`。
+- 在配置的源 Slack 频道每个新顶层报告上触发。
+- 读触发的 thread 且只在其中回复。
+- 用配置的 issue-tracker 集成。
+- 归类、查证据、追因、去重，只为明确的全新 bug 建 ticket。
+- 以一条仅 thread 的判定收尾，带配置的 `[benny:bug]`、`[benny:performance]` 或 `[benny:other]` 标记和可选 tracker URL。
+- 绝不发源频道顶层消息。
 
-After the triage editor handoff is complete, give `automate` this complete repro and fix intent:
+分诊编辑器交接完成后，给 `automate` 这份完整的复现修复意图：
 
-- Name `benny-reproduce`.
-- Read and follow `.cursor/automations/benny/skills/reproduce-and-fix-issues/SKILL.md` for every run.
-- Trigger on the same new top-level reports in the configured source Slack channel.
-- Use the configured repository and default branch.
-- Read the source thread and reply only inside it.
-- Include pull request creation and the configured tracker, control-adapter, and feature-map requirements. Paraphrase mapped user paths and states unless `automate` confirms an eligible committed file in the same repository.
-- Wait for a trusted triage marker before acting.
-- Reproduce the exact symptom twice through the mapped real UI and capture evidence.
-- Verify an existing fix without authoring over it.
-- Attempt an optional bounded fix only after confirmed repro, then open a draft pull request when proof and checks pass.
-- Never post a source-channel root message.
+- 名字 `benny-reproduce`。
+- 每次运行读并遵循 `.cursor/automations/benny/skills/reproduce-and-fix-issues/SKILL.md`。
+- 在配置的源 Slack 频道同样的新顶层报告上触发。
+- 用配置的仓库和默认分支。
+- 读源 thread 且只在其中回复。
+- 含 pull request 创建和配置的 tracker、control-adapter、feature-map 要求。转述已建图的用户路径和状态，除非 `automate` 确认同一仓库里有可用的已提交文件。
+- 等可信分诊标记再行动。
+- 经已建图真实 UI 把确切症状复现两遍并捕获证据。
+- 验证已有修复而不在其上重写。
+- 确认复现后才尝试一次可选的有边界修复，证明和检查通过才开 draft PR。
+- 绝不发源频道顶层消息。
 
-Do not duplicate `automate`'s Slack, repository, integration, completeness, authentication, draft-review, approval, readiness, or editor-handoff work.
+不要重复 `automate` 的 Slack、仓库、集成、完整性、认证、草稿 review、批准、就绪或编辑器交接工作。
 
-### Existing automations
+### 既有 automation
 
-The built-in `automate` skill is creation-only. Do not use it to search for, inspect, or update existing automations.
+内建 `automate` skill 只管创建。别用它搜索、检查或更新既有 automation。
 
-Finish configuration, routing, control-adapter, and feature-map validation. Then give the user this concise editor checklist.
+先完成配置、routing、control-adapter、feature-map 验证。然后给用户这份简明编辑器清单。
 
-For the existing triage automation, update:
+既有分诊 automation 更新：
 
-- Name and description
-- Direct instruction to read `.cursor/automations/benny/skills/triage-issue-reports/SKILL.md`
-- New top-level Slack report trigger and source channel
-- Slack thread read and reply capabilities
-- Issue-tracker integration
-- Paraphrased triage instructions, thread-only rule, and Benny verdict markers
+- 名字和描述
+- 直接指令：读 `.cursor/automations/benny/skills/triage-issue-reports/SKILL.md`
+- 新顶层 Slack 报告触发和源频道
+- Slack thread 读和回复能力
+- issue-tracker 集成
+- 转述的分诊指令、仅 thread 规则、Benny 判定标记
 
-For the existing repro automation, update:
+既有复现 automation 更新：
 
-- Name and description
-- Direct instruction to read `.cursor/automations/benny/skills/reproduce-and-fix-issues/SKILL.md`
-- Matching Slack trigger and source channel
-- Repository and default branch
-- Slack thread read and reply capabilities
-- Pull request action
-- Tracker, control-adapter, and feature-map requirements
-- Paraphrased marker wait, evidence, verification, and bounded-fix instructions
+- 名字和描述
+- 直接指令：读 `.cursor/automations/benny/skills/reproduce-and-fix-issues/SKILL.md`
+- 匹配的 Slack 触发和源频道
+- 仓库和默认分支
+- Slack thread 读和回复能力
+- pull request action
+- tracker、control-adapter、feature-map 要求
+- 转述的等标记、证据、验证和有边界修复指令
 
-Ask the user to update each existing automation directly in its Automations editor. Do not create replacements or duplicates.
+请用户直接在各自的 Automations 编辑器里更新每个既有 automation。不要创建替代品或重复项。
 
-### Creation boundary
+### 创建边界
 
-Never call a direct automation backend service or backend automation tool. Never use a browser URL that carries draft fields. Never build or open a Cursor protocol deep link. For new automations, the only finish path is the built-in `automate` skill's reviewed Automations editor handoff.
+绝不直接调 automation 后端服务或后端 automation 工具。绝不用携带草稿字段的浏览器 URL。绝不构造或打开 Cursor 协议 deep link。新 automation 唯一的完成路径是内建 `automate` skill 经 review 的 Automations 编辑器交接。
 
-Do not enable either automation until the thread-safety test passes after the editor save.
+编辑器保存后 thread 安全测试通过之前，不要启用任一 automation。
 
-## 8. Test thread safety
+## 8. 测试 thread 安全
 
-Use a test channel or a harmless test report.
+用测试频道或无害测试报告。
 
-Before testing, confirm that the target repository's `.cursor/settings.json`, `.cursor/automations/benny/`, and every referenced secret-free configuration file are committed on the branch used by the automation checkout. Confirm that both live prompts point at their exact committed operational files. If any check fails, stop. Tell the user that the automation cannot be enabled yet.
+测试之前确认：目标仓库的 `.cursor/settings.json`、`.cursor/automations/benny/`、每个被引用的无 secret 配置文件都提交在 automation checkout 所用的分支上。确认两个线上 prompt 指向各自确切的已提交 operational 文件。任何检查失败就停。告诉用户 automation 还不能启用。
 
-Verify:
+验证：
 
-1. Triage stores the root `thread_ts` and posts exactly one verdict as a reply.
-2. The verdict contains one configured marker.
-3. Repro accepts the marker only from the configured triage identity.
-4. Repro keeps the same immutable source coordinates.
-5. No source-channel root message appears.
-6. A delegated worker cannot use any Slack write action.
-7. Missing coordinates, a deleted parent, or a failed preflight produces no post and no tracker issue.
+1. 分诊存根 `thread_ts` 并以回复形式恰好发一条判定。
+2. 判定含恰好一个配置的标记。
+3. 复现只接受来自配置分诊身份的标记。
+4. 复现保持同一组不可变源坐标。
+5. 不出现源频道顶层消息。
+6. 被委托的 worker 用不了任何 Slack 写 action。
+7. 坐标缺失、父级被删、preflight 失败时不发帖也不建 tracker issue。
 
-Enable normal traffic only after all seven checks pass.
+七项全过才放开正常流量。

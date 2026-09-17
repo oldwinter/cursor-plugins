@@ -2,7 +2,7 @@
 	"name": "pstack",
 	"displayName": "pstack",
 	"version": "0.15.2",
-	"description": "if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence.",
+	"description": "想走得快，先往深走。pstack 帮你写更少但更高质量的代码。严谨的 agent 工作流，可以放心并行。",
 	"author": {
 		"name": "Lauren Tan"
 	},

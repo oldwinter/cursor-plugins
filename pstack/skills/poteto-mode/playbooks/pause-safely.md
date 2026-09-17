@@ -1,10 +1,10 @@
 ### Pause safely
 
-**You own a clean stop. Leave a checkpoint a cold-start agent can resume from.** This is explicit only. On "keep going", "going to bed, keep going", or "don't stop", do not pause.
+**你拥有干净的停止。留下一个冷启动 agent 能接着干的 checkpoint。** 这只在显式要求时用。"keep going"、"going to bed, keep going"、"don't stop" 都不暂停。
 
-1. Stop at a safe boundary. Finish the current atomic step or back out of it. Never stop mid-edit in a known-broken state. Start nothing new, and cancel any nested subagents.
-2. Take no irreversible action to pause. No PR and no push unless you already had one out.
-3. Make the work durable. Commit uncommitted edits as one clear `wip:` commit on the current branch so nothing is lost. If the tree is broken, say so in the commit body in one line.
-4. Write the resume note off-context. Capture intent, what you were doing, progress and what's verified, current state, next steps, key files, and gotchas. For the compaction trigger write it to a file like `/tmp/<slug>-resume.md`. If a show-me-your-work trail exists, point at it instead of duplicating it.
+1. 在安全边界停。做完当前原子步骤或从中退出。绝不在已知坏状态的中途停。不开新活，取消任何嵌套 subagent。
+2. 为暂停不做任何不可逆动作。没有 PR、没有 push——除非你本来就推过。
+3. 让工作持久。把未提交编辑作为一条清楚的 `wip:` commit 提交到当前 branch，什么都不丢。树是坏的就在 commit body 里一行说明。
+4. 把恢复笔记写到上下文外。记下意图、你正在做什么、进度和已验证的部分、当前状态、下一步、关键文件、坑。compaction 触发时写到 `/tmp/<slug>-resume.md` 这类文件。已有 show-me-your-work 轨迹就指向它，别重复誊。
 
-**Reply:** where you are in the loop, what's on disk versus still in your head (paths, no diff dumps), the commits you made and whether the tree is clean, and the first action on resume. This is a pause, not a final report.
+**回复：** 你在循环的哪里、盘上有什么 vs 还只在你脑子里的（给路径，不贴 diff）、做了哪些 commit 以及树干不干净、恢复后的第一个动作。这是暂停，不是结题报告。

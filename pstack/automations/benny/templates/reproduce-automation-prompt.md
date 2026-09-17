@@ -1,16 +1,16 @@
-# Reproduce automation prompt
+# 复现 automation prompt
 
-> Source material for the copied setup workflow. Paraphrase this intent into a built-in `automate` draft after `automate` confirms that the copied pack is committed in the repository where the automation will run.
+> 复制后 setup 工作流的源材料。`automate` 确认复制的 pack 已提交在 automation 将运行的仓库之后，把这份意图转述进内建 `automate` 草稿。
 
-Read and follow `.cursor/automations/benny/skills/reproduce-and-fix-issues/SKILL.md` for this run.
+本次运行读并遵循 `.cursor/automations/benny/skills/reproduce-and-fix-issues/SKILL.md`。
 
-Configuration source. Include this repository-relative path only when it is committed in the same target repository. Otherwise paraphrase the configured values. Never use a plugin source or cache path:
+配置来源。仅当这个仓库相对路径已提交在同一目标仓库时才包含它。否则转述配置的值。绝不用 plugin 源或缓存路径：
 
 ```text
 {{BENNY_CONFIG_PATH}}
 ```
 
-Trigger:
+触发：
 
 ```json
 {
@@ -20,14 +20,14 @@ Trigger:
 }
 ```
 
-The creation intent should describe this as a new top-level report in the configured source Slack channel. It should include the configured repository, default branch, issue tracker, control adapter, feature map, and draft pull request capability.
+创建意图应把它描述为配置的源 Slack 频道里的一份新顶层报告。应含配置的仓库、默认分支、issue tracker、control adapter、feature map 和 draft pull request 能力。
 
-Treat the source channel and root thread timestamp as immutable. If either is missing or does not match configuration, stop without posting.
+把源频道和根 thread 时间戳当作不可变。任一缺失或与配置不符就不发帖直接停。
 
-Wait for a configured triage marker from the configured triage identity in this exact thread. Proceed only for `[benny:bug]` or `[benny:performance]`.
+等本 thread 里来自配置分诊身份的配置分诊标记。只对 `[benny:bug]` 或 `[benny:performance]` 继续。
 
-Require the configured control-adapter skill before attempting a repro. Reproduce the exact discriminating symptom twice through the real UI. Verify existing pull requests or commits without authoring over them. Attempt a bounded fix only after a confirmed repro and the operational file's fix gate.
+尝试复现之前要求配置的 control-adapter skill 就位。经真实 UI 把确切的判别性症状复现两遍。验证已有 pull request 或 commit 而不在其上重写。确认复现且过 operational 文件的修复闸门后才尝试有边界修复。
 
-The coordinator is the only Slack poster. Every child prompt must forbid `SendSlackMessage`, `PostToSlack`, `chat.postMessage`, and all other Slack writes. Children return findings only.
+coordinator 是唯一的 Slack 发帖方。每个子 prompt 必须禁止 `SendSlackMessage`、`PostToSlack`、`chat.postMessage` 和一切其他 Slack 写。子级只回报发现。
 
-Never post a root message in the source channel.
+绝不在源频道发顶层消息。

@@ -1,14 +1,14 @@
 # benny
 
-benny gives you two cursor automations for slack issue reports. one triages each report. the other reproduces confirmed bugs and may prepare a small draft fix.
+benny 给你两个处理 slack issue 报告的 cursor automation。一个分诊每份报告，另一个复现已确认的 bug 并可能准备一个小型 draft 修复。
 
-the files in this directory are dormant setup and automation sources. they do not appear as slash skills.
+本目录里的文件是休眠的 setup 和 automation 源。它们不以 slash skill 出现。
 
-## set it up
+## 设置
 
-1. point cursor at [`FOR_AGENTS.md`](./FOR_AGENTS.md) and name the target repository.
-2. let setup merge this whole directory into the target at `.cursor/automations/benny/`. it must preserve destination-only files and review conflicts instead of overwriting local edits.
-3. let setup enable pstack in the target repository's `.cursor/settings.json` for shared dependencies:
+1. 把 cursor 指向 [`FOR_AGENTS.md`](./FOR_AGENTS.md) 并报目标仓库名。
+2. 让 setup 把整个目录合并进目标的 `.cursor/automations/benny/`。它必须保留仅目标端存在的文件、review 冲突而不是覆盖本地编辑。
+3. 让 setup 在目标仓库的 `.cursor/settings.json` 里为共享依赖启用 pstack：
 
 ```json
 {
@@ -18,6 +18,6 @@ the files in this directory are dormant setup and automation sources. they do no
 }
 ```
 
-4. keep user-owned configuration outside the copied pack, for example in `.cursor/benny/`. adapt [`configuration.example.yaml`](./templates/configuration.example.yaml) and [`feature-map.example.md`](./skills/reproduce-and-fix-issues/references/feature-map.example.md).
-5. commit `.cursor/settings.json`, `.cursor/automations/benny/`, and any secret-free configuration before enabling either automation.
-6. review each new automation draft or update existing automations in their editors. then send a harmless test report and verify every source-channel post stays in the original thread.
+4. 用户拥有的配置放在复制的 pack 之外，比如 `.cursor/benny/`。改写 [`configuration.example.yaml`](./templates/configuration.example.yaml) 和 [`feature-map.example.md`](./skills/reproduce-and-fix-issues/references/feature-map.example.md)。
+5. 启用任一 automation 之前，提交 `.cursor/settings.json`、`.cursor/automations/benny/` 和任何无 secret 的配置。
+6. review 每个新 automation 草稿，或在编辑器里更新既有 automation。然后发一份无害的测试报告，核实每条源频道发言都留在原 thread 里。

@@ -1,53 +1,53 @@
-# Understand the code before changing it
+# 改代码之前先理解代码
 
-Editing code you don't understand is how subtle regressions ship. pstack gives you four ways in. `/how` explains what the code does now. `/why` digs up the reasons it's shaped that way. `/teach` blends both into one explanation. `/recall` rebuilds your own recent context on a topic.
+编辑你不理解的代码，正是隐蔽 regression 被交付的方式。pstack 给你四条入口：`/how` 解释代码现在做什么，`/why` 挖出它长成这样的原因，`/teach` 把两者揉成一份讲解，`/recall` 重建你自己在某个主题上的近期上下文。
 
-![A detective studies a machine blueprint with a magnifying glass while robots fetch case files; the evidence board behind her links clues under /how and /why.](./images/understanding.jpg)
+![一名侦探拿着放大镜研究机器蓝图，机器人们取来案卷；她身后的证据板把线索串联在 /how 与 /why 之下。](./images/understanding.jpg)
 
-## Trace behavior with `/how`
-
-```text
-/how do we dedupe notifications? is there an n+1 when we look up subscribers?
-```
-
-Ask the question you actually have. [`/how`](../../skills/how/SKILL.md) reads the code and answers at the level of a senior engineer onboarding you onto the subsystem, with the runtime flow, the key types, and the non-obvious parts. For a big subsystem it fans out two to four read-only explorers first. For a narrow question it just reads and explains.
-
-## Dig up history with `/why`
+## 用 `/how` 追踪行为
 
 ```text
-/why was the retry limit set to five? does the reason still hold?
+/how 我们怎么做通知去重？查订阅者时会不会有 n+1？
 ```
 
-[`/why`](../../skills/why/SKILL.md) works like a detective on a cold case. It starts from source control, then queries whatever evidence categories your MCPs expose, such as the issue tracker, long-form docs, team chat, observability, error tracking, and analytics, all in parallel. The report cites everything, separates direct evidence from inference, and says "appears to" when the record is thin. A null result gets reported too, because "nobody wrote down why" is itself an answer.
+问你真正想问的问题。[`/how`](../../skills/how/SKILL.md) 会读代码，并以"资深工程师带你上手这个子系统"的深度作答：runtime 流程、关键类型、不显然的部分。对大型子系统它会先并行 fan out 两到四个只读 explorer；对窄问题就直接读了讲。
 
-The two compose naturally. `do why first then how` is a perfectly good prompt when you suspect the history explains the mess.
-
-## Actually understand it with `/teach`
+## 用 `/why` 挖掘历史
 
 ```text
-/teach me how this PR changes retries. convince me it fixes the cause and not the symptom.
+/why 重试上限当初为什么定为五？那个理由现在还成立吗？
 ```
 
-[`/teach`](../../skills/teach/SKILL.md) is for when a summary isn't enough. It runs `/how` and `/why`, for a small change maybe just one of them, and weaves the findings into a plain explanation that builds up diagram by diagram. The "convince me" framing is worth stealing. It turns the explanation into an argument you can poke at instead of a tour.
+[`/why`](../../skills/why/SKILL.md) 像侦办冷案的侦探一样工作。它从 source control 入手，然后并行查询你的 MCP 暴露的每一类证据——issue tracker、长篇文档、团队聊天、可观测性、错误追踪、分析数仓。报告会给所有结论标出处，把直接证据和推断分开，在记录单薄时说"appears to"（看起来是）。查无结果也会如实报告，因为"没人写下原因"本身就是答案。
 
-## Rebuild your own context with `/recall`
+两者天然可以组合。当你怀疑历史能解释这团乱麻时，`先 why 再 how` 就是一条很好的 prompt。
+
+## 用 `/teach` 真正搞懂它
 
 ```text
-/recall catch me up on the export work from last week
+/teach 给我讲这个 PR 怎么改动了重试。说服我它修的是根因而不是症状。
 ```
 
-[`/recall`](../../skills/recall/SKILL.md) mines your own recent chats plus the shared record (issues, prior fixes, errors still firing) and hands back a brief on where things stand and what's next. Use it when you're returning to a topic cold. If you want to resume one specific chat, that's the Session pickup playbook below, not `/recall`.
+[`/teach`](../../skills/teach/SKILL.md) 用于摘要不够用的场合。它运行 `/how` 和 `/why`（小改动可能只跑其一），把发现织成一份通俗解释，一张图一张图地铺开。"说服我"这个框法值得偷学——它把讲解变成一场你可以戳一戳的论证，而不是一趟参观。
 
-## Take over prior work with Session pickup
-
-When another agent (or you, last week) left a branch mid-flight:
+## 用 `/recall` 重建你自己的上下文
 
 ```text
-/poteto-mode take over this branch. read the decision log, figure out what's done, and continue from there. don't redo finished work.
+/recall 给我补补课：上周的 export 工作进展到哪了
 ```
 
-The [Session pickup playbook](../../skills/poteto-mode/playbooks/session-pickup.md) treats the prior trail as authoritative. It reconstructs the branch state and decisions, names the resume point, and verifies inherited claims against the original goal instead of re-deriving everything from scratch.
+[`/recall`](../../skills/recall/SKILL.md) 挖掘你自己最近的聊天加上共享记录（issue、既往修复、仍在触发的错误），交回一份"现状如何、接下来做什么"的简报。冷启动回到某个主题时用它。如果你是想恢复某一个具体聊天，那是下面的 Session pickup playbook，不是 `/recall`。
 
-**Pitfall:** don't skip this page's skills because "the agent will read the code anyway." An agent that starts editing without a traced model tends to fix the symptom at the first plausible spot. `/how` first is cheaper than the second bug.
+## 用 Session pickup 接手先前的工作
 
-Next: [Design the change](./04-design.md).
+当另一个 agent（或上周的你）把一个 branch 撂在半路上：
+
+```text
+/poteto-mode 接手这个 branch。读决策日志，弄清哪些做完了，从那里继续。不要重做已完成的工作。
+```
+
+[Session pickup playbook](../../skills/poteto-mode/playbooks/session-pickup.md) 把先前留下的轨迹当作权威。它重建 branch 的状态和决策、指明恢复点，并对着最初目标验证继承来的结论，而不是从零全部重推。
+
+**陷阱：** 不要因为"agent 反正会读代码"就跳过本页的 skill。没有 trace 过模型就动手改的 agent，倾向于在第一个貌似合理的地方修症状。先 `/how` 一遍，比第二个 bug 便宜。
+
+下一页：[设计改动](./04-design.md)。

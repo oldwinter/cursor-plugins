@@ -1,33 +1,33 @@
 ---
 name: principle-prove-it-works
-description: "Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.'"
+description: "在完成任务后、宣布完成前应用。对着真实制品验证（运行功能、读取实际值、检查 diff），而不是看代理指标、自我汇报或“能编译”。"
 disable-model-invocation: true
 ---
 
-# Prove It Works
+# Prove It Works（证明它能用）
 
-Verify every task output by checking the real thing directly. Do not infer from proxies, self-reports, or "it compiles."
+验证每个任务产出时直接检查真实的东西。不要从代理指标、自我汇报或"能编译"推断。
 
-**Why:** Unverified work has unknown correctness. Indirect verification (file mtimes, output freshness, agent self-reports, cached screenshots) feels cheaper than direct observation. Acting on a wrong inference costs far more than checking the source.
+**为什么：** 未验证的工作正确性未知。间接验证（文件 mtime、输出新旧程度、agent 自我汇报、缓存截图）感觉比直接观察便宜。按错误推断行事的代价远高于直接查源头。
 
-**Pattern:** After completing any task, ask: "how do I prove this actually works?"
+**模式：** 完成任何任务之后问："我怎么证明它真的能用？"
 
-Check the real thing, not a proxy:
-- Check process liveness directly, not indirectly through derived state
-- Read the actual value, not a cached or derived representation
-- When verification fails, suspect the observation method before suspecting the system
+检查真实的东西，不是代理指标：
+- 直接检查进程存活，而不是通过派生状态间接判断
+- 读实际的值，不是缓存或派生的表示
+- 验证失败时，先怀疑观察方法，再怀疑系统
 
-Code and features:
-1. Build it (necessary but not sufficient)
-2. Run it and exercise the actual feature path
-3. Check the full chain: does data flow from input to output?
-4. For integrations, test the full communication path end-to-end
+代码与功能：
+1. 构建它（必要但不充分）
+2. 运行它并走一遍真实功能路径
+3. 检查完整链路：数据从输入流到输出吗？
+4. 对集成，端到端测试完整通信路径
 
-Delegation: trust artifacts, not self-reports.
-When verifying delegated work, inspect the actual output artifact (git diff, file contents, runtime behavior), not the delegate's summary.
+委托：信制品，不信自我汇报。
+验证委托工作时，检查实际产出物（git diff、文件内容、运行时行为），而不是 delegate 的总结。
 
-## Script the check when you can
+## 能写脚本就写脚本
 
-The strongest proof is a deterministic script that re-runs the same comparison, not a one-time eyeball. Write the script, run it, and keep its output as an artifact a reviewer can re-run instead of trusting your word.
+最强的证明是一个每次重跑同样比较的确定性脚本，不是一次性的肉眼检查。写脚本、跑它、把输出留作审查者可以重跑的制品，而不是信你一句话。
 
-Keep the artifact visible for the human. Commit it only for large or complex work where the trail has to be auditable later, like a big port or migration (the **show-me-your-work** skill).
+让制品对人类可见。只对大型或复杂工作 commit——那些轨迹以后必须可审计的，比如大型移植或迁移（见 **show-me-your-work** skill）。

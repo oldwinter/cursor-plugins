@@ -1,21 +1,21 @@
 ---
 name: principle-foundational-thinking
-description: "Apply before writing logic: choosing core types and data structures, sequencing scaffold-vs-feature work, asking what concurrent actors share. Get the data structures right so downstream code becomes obvious."
+description: "在写逻辑之前应用：选定核心类型和数据结构、安排 scaffold 与 feature 的先后、问清并发 actor 之间共享什么。把数据结构搞对，下游代码自然显而易见。"
 disable-model-invocation: true
 ---
 
-# Foundational Thinking
+# Foundational Thinking（地基式思考）
 
-**Structural decisions** protect option value. **Code-level decisions** protect simplicity.
+**结构性决策**保护期权价值。**代码级决策**保护简单性。
 
-**Data structures first.** Get the data shape right before writing logic. Define core types early, trace every access pattern, and choose structures that match the dominant paths.
+**数据结构优先。** 写逻辑之前先把数据形态搞对。尽早定义核心类型，追踪每一种访问模式，选择匹配主干路径的结构。
 
-At code level, DRY the structure, not every line. Types and data models should converge. Three similar statements still beat a premature abstraction. Prefer explicit over clever. Test behavior and edge cases, not line counts.
+在代码层面，DRY 的是结构而不是每一行。类型和数据模型应当收敛。三条相似的语句仍然胜过过早的抽象。宁可直白，不要花哨。测行为和边界情形，不数行数。
 
-**Concurrency corollary.** Before sharing state between actors, ask "what happens if another actor modifies this concurrently?" If not "nothing", isolate.
+**并发推论。** 在 actor 之间共享状态之前，先问"如果另一个 actor 并发修改它会怎样？"答案不是"没影响"的话，就隔离。
 
-**Scaffold first.** If something helps every later phase, do it first. Ask "does every subsequent phase benefit from this existing?" CI, linting, test infrastructure, and shared types are scaffold. Sequence for option value: setup before features, tests before fixes. Keep commits small and single-purpose.
+**scaffold 优先。** 如果某物对每个后续阶段都有帮助，就最先做。问"后续每个阶段是否都受益于它的存在？"CI、lint、测试基础设施和共享类型都是 scaffold。按期权价值排序：setup 先于 feature，测试先于修复。commit 保持小且单一目的。
 
-Each increment should land a coherent abstraction or deepen one that exists. Do not spread a new capability across callers as special-case coordination.
+每个增量应当落地一个自洽的抽象，或加深一个已有抽象。不要把新能力摊到各调用方上变成特例协调。
 
-Subtraction comes before scaffolding. Remove dead code first, then lay foundations.
+减法先于脚手架。先删死代码，再铺地基。

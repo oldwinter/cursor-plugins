@@ -1,31 +1,31 @@
 ---
 name: principle-encode-lessons-in-structure
-description: "Apply when you catch yourself writing the same instruction a second time, or notice a recurring correction. Encode the rule as a lint, metadata flag, runtime check, or script instead of more text."
+description: "当你发现自己在第二次写同一条指令、或注意到一个反复出现的纠正时应用。把规则编码成 lint、metadata 标志、运行时检查或脚本，而不是再多写一段文字。"
 disable-model-invocation: true
 ---
 
-# Encode Lessons in Structure
+# Encode Lessons in Structure（把教训编码进结构）
 
-Encode recurring fixes in mechanisms (tools, code, metadata, automation) instead of textual instructions. Every error, human correction, and unexpected outcome is a learning signal. Capture it, route it, and close the loop.
+把反复出现的修复编码进机制（工具、代码、metadata、自动化），而不是文字指令。每个错误、每次人类纠正、每个意外结果都是学习信号。捕获它、路由它、闭环它。
 
-**Why:** Textual instructions are easy to miss. They require the reader to notice, remember, and comply. Structural mechanisms (lint rules, metadata flags, runtime checks, automation scripts) enforce the rule without cooperation.
+**为什么：** 文字指令容易被漏掉，它要求读者注意到、记住、并遵守。结构化机制（lint 规则、metadata 标志、运行时检查、自动化脚本）不依赖配合就能执行规则。
 
-**Pattern:**
-When you catch yourself writing the same instruction a second time:
-1. Ask: can this be a lint rule, a metadata flag, a runtime check, or a script?
-2. If yes, encode it. Delete the instruction
-3. If no (requires judgment), make the instruction more prominent and add an example of the failure mode
+**模式：**
+当你发现自己在第二次写同一条指令时：
+1. 问：这能不能变成一条 lint 规则、一个 metadata 标志、一个运行时检查、或一个脚本？
+2. 能，就编码它。删掉那条指令。
+3. 不能（需要判断力），就把指令写得更醒目，并附一个失效模式的例子。
 
-**Pick the strongest mechanism.** When more than one mechanism would work, choose the strongest the situation allows (an unrepresentable state that cannot compile, then a lint or banned API that fails CI, then a canonical helper, then a runtime check), because agents copy whatever the surrounding code already does and a weaker guard becomes the next template.
+**选最强的机制。** 当多个机制都可行时，选情况允许的最强者（先选让非法状态无法编译的表示，再选让 CI 失败的 lint 或 banned API，再选 canonical helper，最后选运行时检查）——因为 agent 会照抄周围代码已有的做法，弱一档的护栏会变成下一个模板。
 
-**Corollary:** If the fix is structural, only use the structural fix. The instruction is the symptom.
+**推论：** 如果修复是结构性的，就只用结构性修复。指令是症状。
 
-**Feedback loop:**
-- **Capture every correction.** When the human intervenes or tests fail, decide if it's a one-off or a pattern.
-- **Route to the right layer.** One-off -> brain note. Recurring fix -> skill or lint rule. Systemic issue -> principle.
-- **Close the loop.** Don't just record. Apply now or create a concrete todo.
+**反馈回路：**
+- **捕获每次纠正。** 当人类介入或测试失败时，判断这是一次性还是模式。
+- **路由到正确的层。** 一次性 -> 记在脑里。反复出现的修复 -> skill 或 lint 规则。系统性问题 -> principle。
+- **闭环。** 别只记录。现在就应用，或建一个具体 todo。
 
-**Anti-patterns:**
-- Acknowledging without recording ("I'll keep that in mind" does not persist)
-- Recording without routing (a brain note about a lint rule that should exist is wasted unless the lint rule gets implemented)
-- Fixing without generalizing (fixing one instance while leaving the recurring pattern intact)
+**反模式：**
+- 只确认不记录（"我会记住的"不会持久）
+- 只记录不路由（脑记一条"应该有这个 lint 规则"是浪费，除非规则真的被实现）
+- 只修复不泛化（修掉一个实例，却留着反复出现的模式）

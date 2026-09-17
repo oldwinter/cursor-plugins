@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Append a well-formed row to a show-me-your-work decision log (TSV).
-# Usage: log.sh <logfile> <phase> <decision> <why> <evidence> <result>
+# 向 show-me-your-work 决策日志（TSV）追加一行格式正确的记录。
+# 用法：log.sh <logfile> <phase> <decision> <why> <evidence> <result>
 set -euo pipefail
 
 if [ "$#" -ne 6 ]; then
@@ -21,12 +21,10 @@ if [ ! -f "$logfile" ]; then
 fi
 
 ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-# Strip tabs/newlines/CR so cells stay on one line, and prefix any cell
-# whose first char a spreadsheet would parse as a formula (=, +, -, @)
-# with a single quote. The skill expects this log to be read in
-# spreadsheets, so attacker-controlled evidence (PR titles, filenames,
-# generated text) must not become formula execution when a reviewer
-# opens the file.
+# 剥掉 tab/换行/CR 让单元格保持单行，并给首字符会被电子表格
+# 解析成公式的单元格（=, +, -, @）加单引号前缀。该 skill 预期
+# 这份日志会在电子表格里被打开，因此攻击者可控的证据（PR 标题、
+# 文件名、生成文本）绝不能在 reviewer 打开文件时变成公式执行。
 clean() {
 	local v
 	v=$(printf '%s' "$1" | tr '\t\n\r' '   ')

@@ -1,46 +1,46 @@
 ---
 name: swarm
-description: "Fan out N parallel workers, drain them, and return one report. Use for /swarm, 'swarm this', or parallel coverage, races, gauntlets, and exploration."
+description: "Fan out N 个并行 worker，等它们全部返回，交回一份报告。用于 /swarm、'swarm this'，或并行覆盖、race、gauntlet 和探索。"
 disable-model-invocation: true
 ---
 
 # Swarm
 
-Fan out N parallel cloud workers. They may cover separate slices, race the same brief, or mix both. The parent waits, aggregates, and returns one report.
+Fan out N 个并行 cloud worker。它们可以各管一片、对同一份 brief 赛跑、或两者混合。父 agent 等待、汇总、交回一份报告。
 
-## Start
+## 开始
 
-Open a todolist with one entry per phase before launching anything.
+在启动任何东西之前，开一个每阶段一条的 todolist。
 
 1. Frame
 2. Fan out
 3. Aggregate
 4. Report
 
-## Phase A: Frame
+## Phase A：Frame
 
-1. State the done predicate and the artifact or report the swarm must return.
-2. Choose the shape. Partition into slices, race N workers on identical briefs, or mix both. For a race or mixed shape, declare `first pass`, `rank all`, or `best-of` before spawning.
-3. Set N from the user or derive it from the shape. N is total workers, not the cloud concurrency limit.
-4. Pick the worker model from `swarm workers` in `~/.cursor/rules/pstack-models.mdc` when present. Otherwise use `grok-4.6-fast-xhigh`. For a model race, name each arm's model up front.
-5. Give each worker its own writable output when it writes.
+1. 声明 done 谓词，以及 swarm 必须交回的制品或报告。
+2. 选形态。切成切片、让 N 个 worker 跑同一份 brief 的 race，或混合。对 race 或混合形态，spawn 之前先声明 `first pass`、`rank all` 或 `best-of`。
+3. N 由用户给出或从形态推导。N 是 worker 总数，不是 cloud 并发上限。
+4. worker 模型取 `~/.cursor/rules/pstack-models.mdc` 里的 `swarm workers`（存在时）。否则用 `grok-4.6-fast-xhigh`。模型 race 要事先点名每个分支的模型。
+5. worker 要写东西时，给每个 worker 自己的可写输出。
 
-## Phase B: Fan out
+## Phase B：Fan out
 
-Spawn all N workers in one message with `subagent_type: generalPurpose`, `environment: "cloud"`, `run_in_background: true`, and the configured model. Use `environment: "local"` only when the worker needs access to something on the user's computer.
+在一条消息里 spawn 全部 N 个 worker：`subagent_type: generalPurpose`、`environment: "cloud"`、`run_in_background: true`，使用配置的模型。只有当 worker 需要访问用户电脑上的东西时才用 `environment: "local"`。
 
-When a worker must start from a non-default pushed branch, pass `cloud_base_branch`.
+当 worker 必须从一个非默认的已推送 branch 出发时，传 `cloud_base_branch`。
 
-Every brief stands alone. Include the goal, scope, exact slice or race arm, how to verify, and what to report. Reports use `PASS`, `ISSUES`, or `BLOCKED` with evidence.
+每份 brief 都要能独立成立。包含目标、scope、确切的切片或 race 分支、怎么验证、报告什么。报告用 `PASS`、`ISSUES` 或 `BLOCKED`，带证据。
 
-If a worker drops out, proceed with N-1 and note it.
+worker 掉队就带着 N-1 继续，并记一笔。
 
-## Phase C: Aggregate
+## Phase C：Aggregate
 
-Read the terminal results. For coverage, every required slice needs a result. For a race, apply the selection rule declared up front. Use first pass, rank all, or best-of. Do not paste raw worker dumps.
+读最终结果。覆盖型任务里每个必需切片都要有结果。race 应用事先声明的选拔规则：first pass、rank all 或 best-of。不要原样粘贴 worker 倾倒。
 
-Keep a compact result table, one-line evidenced issues, and explicit gaps or dropouts.
+保留一张紧凑结果表、一行一条的带证据问题、以及明确的缺口或掉队记录。
 
-## Phase D: Report
+## Phase D：Report
 
-Return one consolidated in-chat report with the table, issue one-liners, gaps or dropouts, and the race rule when used.
+交回一份整合的聊天内报告：表、一行问题、缺口或掉队、用过的 race 规则。

@@ -1,16 +1,16 @@
 ---
 name: arena
-description: "Spawn N parallel candidates at the same task, pick a base, graft the strongest parts of the losers into it. Use for /arena, 'arena this', 'throw it in the arena', or when one attempt at a non-trivial artifact would lock in the wrong shape."
+description: "对同一任务 spawn N 个并行候选，选一个 base，把败者最强的部分嫁接进去。用于 /arena、'arena this'、'throw it in the arena'，或对非平凡制品只试一次会锁死错误形态时。"
 disable-model-invocation: true
 ---
 
 # Arena
 
-Fan out N parallel attempts at the same task. Read every candidate end to end. Pick the strongest as the base. Graft the best ideas from the others into it. Verify the synthesized result.
+对同一任务 fan out N 个并行尝试。把每个候选从头读到尾。选最强的做 base。把其他候选里最好的想法嫁接进来。验证综合结果。
 
-## Start
+## 开始
 
-Open a todolist with one entry per phase before launching anything.
+在启动任何东西之前，开一个每阶段一条的 todolist。
 
 1. Frame
 2. Fan out
@@ -19,53 +19,53 @@ Open a todolist with one entry per phase before launching anything.
 5. Graft
 6. Verify
 
-## Phase A: Frame
+## Phase A：Frame
 
-The N candidates will receive the same prompt, so the prompt is the contract.
+N 个候选会收到同一份 prompt，所以 prompt 就是契约。
 
-1. State the artifact each candidate is producing.
-2. Derive the rubric. State what success looks like for *this* task, then turn it into 3-6 concrete gradeable criteria. The rubric is the picker's tool in Phase D. Candidates only see the task.
-3. Pick the runners. Use `arena runners` from `~/.cursor/rules/pstack-models.mdc` when present. Otherwise default to one each on `claude-fable-5-1-thinking-max`, `gpt-5.6-sol-max`, `grok-4.6-fast-xhigh`, `claude-opus-5-thinking-xhigh`. Spawn more when the arena covers multiple design directions. Same model N times when the work is generation-bound rather than judgment-sensitive.
-4. Assign output paths. Each candidate writes to its own location (a git worktree where possible, otherwise `/tmp/arena-<slug>/candidate-<n>/`), per the **separate-before-serializing-shared-state** principle skill.
+1. 声明每个候选要产出的制品。
+2. 推导 rubric。说清楚*这个*任务的成功长什么样，然后变成 3-6 条具体可打分的标准。rubric 是 Phase D 挑选者的工具。候选只看到任务。
+3. 选 runner。用 `~/.cursor/rules/pstack-models.mdc` 里的 `arena runners`（存在时）。否则默认 `claude-fable-5-1-thinking-max`、`gpt-5.6-sol-max`、`grok-4.6-fast-xhigh`、`claude-opus-5-thinking-xhigh` 各一。arena 覆盖多个设计方向时多 spawn 几个。工作是生成瓶颈型而非判断敏感型时，同一模型跑 N 次。
+4. 分配输出路径。每个候选写自己的位置（尽量是 git worktree，否则 `/tmp/arena-<slug>/candidate-<n>/`），按 **separate-before-serializing-shared-state** 原则 skill。
 
-## Phase B: Fan out
+## Phase B：Fan out
 
-Spawn all N subagents in one message with `run_in_background: true`, each with the task, the path to the shared grounding, its own output path, and instructions to produce both the artifact and a short rationale.
+在一条消息里 spawn 全部 N 个 subagent，`run_in_background: true`，每个带上任务、共享 grounding 的路径、自己的输出路径，以及产出制品加一份简短 rationale 的指示。
 
-Each rationale names the alternatives the candidate considered and what it rejected.
+每份 rationale 要列出候选考虑过的替代方案和否决了什么。
 
-If a candidate fails to produce output, proceed with N-1 and note the dropout in the synthesis record.
+候选没产出就带着 N-1 继续，在综合记录里记一笔掉队。
 
-## Phase C: Cross-judge
+## Phase C：Cross-judge
 
-After all Phase B candidates complete, choose one model from the `arena cross-judge pool` in `~/.cursor/rules/pstack-models.mdc` when present. Otherwise use `claude-fable-5-1-thinking-max`, `gpt-5.6-sol-max`, `grok-4.6-fast-xhigh`, `claude-opus-5-thinking-xhigh`. Prefer a different model family from the parent's. Spawn one readonly judge subagent on that model. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with the parent's reading in Phase D, not with the candidates themselves. Don't spawn the judge while candidates are still writing.
+Phase B 的候选全部完成后，从 `~/.cursor/rules/pstack-models.mdc` 的 `arena cross-judge pool` 里选一个模型（存在时）。否则用 `claude-fable-5-1-thinking-max`、`gpt-5.6-sol-max`、`grok-4.6-fast-xhigh`、`claude-opus-5-thinking-xhigh`。优先选和父 agent 不同的模型家族。在该模型上 spawn 一个只读 judge subagent。它看到 rubric 和以路径标签表示的候选，给每条标准打分，并推荐一个 base 附理由。它与 Phase D 中父 agent 的阅读并行跑，不是和候选并行。候选还在写的时候别 spawn judge。
 
-## Phase D: Pick a base
+## Phase D：选一个 base
 
-Read every candidate end to end before picking.
+挑选前把每个候选从头读到尾。
 
-Score each candidate against the rubric criterion by criterion, not on holistic feel. Compare against the cross-judge. Agreement on the base confirms the pick. Disagreement means one of you is biased or the rubric was ambiguous. Read both rationales before deciding.
+按 rubric 逐条给候选打分，不凭整体感觉。和 cross-judge 对照：对 base 意见一致，选择得到确认；意见不一致，说明你俩有一个带偏见或 rubric 含糊。决定之前把两份 rationale 都读了。
 
-Pick the base on which candidate a future maintainer can extend most easily without breaking invariants. Prefer the cleaner boundary or smaller API when two feel tied, per the Laziness Protocol.
+以"未来维护者能在哪个候选上最容易扩展而不破坏不变量"来选 base。两个打平时按 Laziness Protocol 优先边界更干净或 API 更小的。
 
-Record the pick and the reason in a short synthesis note alongside the base artifact, including the cross-judge's verdict.
+把选择和理由连同 cross-judge 的裁决，记成 base 制品旁边的一页短综合笔记。
 
-## Phase E: Graft
+## Phase E：Graft
 
-Walk each losing candidate once more and identify what is worth porting into the base. The signal is usually one or two things per candidate, not most of it.
+再过一遍每个落选候选，找出值得移植进 base 的东西。信号通常是每个候选一两处，不是大半。
 
-Fold each graft in by hand, per the **redesign-from-first-principles** principle skill. Don't paste mechanically. The result has to remain coherent under one mental model.
+每次嫁接都手工折进去，按 **redesign-from-first-principles** 原则 skill。别机械粘贴。结果必须在同一个心智模型下保持自洽。
 
-Record what was grafted, from which candidate, and what was rejected and why.
+记录嫁了什么、来自哪个候选、拒了什么、为什么。
 
-When N candidates converge on the same shape, that is a strong agreement signal. Note the convergence in the record and ship the consensus shape. No graft is needed. When N candidates wildly diverge, Phase A was under-specified. Reframe and re-run rather than averaging the divergence.
+当 N 个候选收敛到同一形态，那是强一致信号：在记录里记下收敛，直接交付共识形态，无需嫁接。当 N 个候选剧烈发散，说明 Phase A 规格不足——重新 frame 并重跑，而不是对分歧取平均。
 
-## Phase F: Verify
+## Phase F：Verify
 
-The synthesized artifact has to hold up under the same scrutiny as any other output, per the **prove-it-works** principle skill.
+综合出的制品必须经得起和其他产出一样的审视，按 **prove-it-works** 原则 skill。
 
-If verification surfaces a problem the arena did not catch, either Phase A was wrong (re-frame and re-run) or one candidate caught it and you missed the graft (go back to Phase E). Don't paper over.
+如果验证暴露出 arena 没抓到的问题，要么 Phase A 错了（重新 frame 重跑），要么某个候选抓到了而你漏了嫁接（回 Phase E）。别粉饰。
 
-## Outputs
+## 产出
 
-One synthesized artifact. One short synthesis note alongside, naming the base, the grafts (with source candidate), the rejections, the dropouts if any, and the verification result.
+一份综合制品。旁边一页短综合笔记：点名 base、嫁接（含来源候选）、否决、掉队（如有）、以及验证结果。

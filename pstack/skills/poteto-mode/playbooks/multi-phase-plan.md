@@ -1,18 +1,18 @@
 ### Multi-phase or multi-PR plan
 
-**You own the plan, not the code. The plan is a checklist an owner runs box by box and the operator audits from the evidence.** The plan is the deliverable. Do not implement.
+**你拥有计划，不拥有代码。计划是一份 checklist——owner 逐格执行，operator 凭证据审计。** 计划就是交付物。不要实现。
 
-1. When the change is one or two files with an obvious approach, skip the plan. Say so and stop.
-2. Settle open questions by prototype before you write. Run `playbooks/prototype.md` for each. Keep the branch, the SHA, and the screenshots for Appendix A. Ask the operator only about a product or preference call that no run can settle. Give options (the **never-block-on-the-human** principle skill).
-3. Explore in subagents with `subagent_type: "poteto-agent"` and an explicit model per the Subagents section (the **guard-the-context-window** principle skill). Each returns file pointers, conventions, test commands, and entry points. No inlined dumps.
-4. Copy the skeleton below into the plan file and fill every placeholder. Unless the operator names a path, write the file under the agent store's `docs/`. Keep every heading and every sub-block in the order shown. One section per PR. One PR is one change with its own evidence (the **sequence-verifiable-units** principle skill). Name the execution playbook in **How to read this**. Pick between `playbooks/autopilot-full.md` and `playbooks/autopilot-stack.md` per the rule at the end of `playbooks/autopilot-stack.md`. A standing program takes `playbooks/orchestrate.md`.
-5. Write under `/technical-writing` in full, then `/unslop`. The body is one Diátaxis mode, how-to. Appendices hold explanation and reference. Each heading states the task or the finding. No long dashes. No mid-sentence colons.
-6. Run `node pstack/skills/poteto-mode/scripts/check-plan.mjs <plan.md>` and fix every line it prints (the **encode-lessons-in-structure** principle skill).
-7. Hand back. Post the plan path and the script's output, then stop. Execution starts on the operator's explicit go, under the execution playbook the plan names.
+1. 改动只有一两个文件且做法显然时，跳过计划。明说然后停。
+2. 写之前用原型平定开放问题。每个跑 `playbooks/prototype.md`。留下 branch、SHA 和截图进 Appendix A。只有跑不出答案的产品或偏好判断才问 operator——给选项（**never-block-on-the-human** 原则 skill）。
+3. 在 subagent 里探索，`subagent_type: "poteto-agent"`，按 Subagents 节显式给模型（**guard-the-context-window** 原则 skill）。每个返回文件指针、约定、测试命令、入口点。不要内联倒出来的内容。
+4. 把下面的骨架复制进计划文件并填满每个占位符。除非 operator 点了路径，文件写在 agent store 的 `docs/` 下。保留每个标题和每个子块、顺序如所示。一个 PR 一节。一个 PR 是一次带自己证据的改动（**sequence-verifiable-units** 原则 skill）。在 **How to read this** 里点名执行 playbook：按 `playbooks/autopilot-stack.md` 末尾的规则在 `playbooks/autopilot-full.md` 与 `playbooks/autopilot-stack.md` 之间选。常设工程用 `playbooks/orchestrate.md`。
+5. 全文先按 `/technical-writing` 写，再 `/unslop`。正文是一种 Diátaxis 模式：how-to。解释和参考放附录。每个标题陈述任务或发现。不用长破折号。不用句中冒号。
+6. 跑 `node pstack/skills/poteto-mode/scripts/check-plan.mjs <plan.md>`，修掉它打印的每一行（**encode-lessons-in-structure** 原则 skill）。
+7. 交回。贴计划路径和脚本输出，然后停。执行从 operator 明确的 go 开始，按计划点名的执行 playbook 走。
 
-**Verification.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked (the **prove-it-works** principle skill). That sentence is the verification rule. Every verification block opens with it. The live block is mandatory. Ten lanes on `grok-4.6-fast-xhigh` at the PR head drive the real surface through its control skill, per the **swarm** skill. Each lane is one box with a concrete scenario, the screenshot it saves, and its pass predicate. One lane is the **Regression lane against trunk.** It runs the same load-bearing scenario on trunk and head. If trunk does not have the feature, the lane records that fact and gates the behavior the diff adds plus the end state the user waits for instead of inventing a trunk result. The perf gate is dual-sided. Trunk and head must both produce the named metric. If trunk lacks the feature, also isolate the work the diff adds and set an absolute budget for that work plus the end-to-end state the user waits for. Do not claim a ratio between unlike scenarios. The perf block names the metric, the interleaved probe, the trunk baseline measured first, and the rule with the number that fails. A PR that changes an interaction is review-gated. The operator reviews it in chat with screenshots and a video before merge. A PR that changes no interaction writes `**Review gate.** None. <PR id> is not review-gated.` and no boxes under it.
+**Verification.** 仅测试不构成充分验证。PR 只有 unit、live、perf 三格都勾上才算验证过（**prove-it-works** 原则 skill）。这句话就是验证规则。每个验证块以它开头。live 块是强制的。在 PR head 上用 `grok-4.6-fast-xhigh` 跑十条 lane，经 control skill 驱动真实 surface，按 **swarm** skill。每条 lane 一格：具体场景、保存的截图、通过谓词。其中一条是**对 trunk 的回归 lane**——在 trunk 和 head 上跑同一承重场景。trunk 没有该功能时，该 lane 记下这个事实，改为 gate diff 新增的行为加用户等待的终态，而不是编造一个 trunk 结果。perf gate 是双侧的：trunk 和 head 都必须产出点名的指标。trunk 缺该功能时，再把 diff 新增的工作隔离出来，给那部分工作加用户等待的端到端状态设绝对预算。不要在不可比的场景之间宣称比值。perf 块点名指标、交错探针、先测的 trunk 基线、以及带失败阈值的规则。改了交互的 PR 是 review-gated：operator 在聊天里看着截图和视频 review 后才许合并。没改交互的 PR 写 `**Review gate.** None. <PR id> is not review-gated.`，下面不放格子。
 
-**Control skill.** Pick it by surface. Browser, Electron, and web UIs use `control-ui` from `cursor-team-kit`. CLIs and TUIs use `control-cli` from `cursor-team-kit`. Native mobile uses whatever simulator-driving skill the repo has. A PR that touches two surfaces gets lanes on both. A surface with no control skill is a risk in Appendix C, and its live block still names how each lane drives it.
+**Control skill.** 按 surface 选。浏览器、Electron、web UI 用 `cursor-team-kit` 的 `control-ui`。CLI 和 TUI 用 `control-cli`。原生移动端用仓库里有的模拟器驱动 skill。碰两个 surface 的 PR 两边都开 lane。没有 control skill 的 surface 记为 Appendix C 的风险，且它的 live 块仍要点名每条 lane 怎么驱动它。
 
 ````markdown
 # <Program> plan
@@ -153,4 +153,4 @@ Each live lane runs on its own cloud VM at the PR head. Drive through `control-u
 <Docs to read before editing. Which PRs get `pstack/skills/how/SKILL.md` and `pstack/skills/interrogate/SKILL.md`. The trail per `pstack/skills/show-me-your-work/SKILL.md`.>
 ````
 
-**Reply:** the plan path, the PR ids with their dependencies and the review-gated set, what the prototypes proved and what stays unproven, and the check script's output.
+**回复：** 计划路径、带依赖关系的 PR id 和 review-gated 集合、原型证明了什么和仍未证明什么、check 脚本的输出。

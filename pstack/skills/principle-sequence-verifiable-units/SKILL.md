@@ -1,22 +1,22 @@
 ---
 name: principle-sequence-verifiable-units
-description: "Apply to multi-step work (sweeps, migrations, runs of similar edits) and to how you stack commits and PRs. Break work into small units that each end in a verifiable state, check each before the next, and order delivery so the sequence proves itself to a reviewer."
+description: "应用于多步骤工作（sweep、迁移、一串相似编辑）以及 commit 和 PR 的堆叠方式。把工作拆成小的单元，每个单元都结束于一个可验证状态，先验证再做下一个，并让交付顺序本身能向审查者自证。"
 disable-model-invocation: true
 ---
 
-# Sequence work into verifiable units
+# Sequence work into verifiable units（把工作排成可验证单元）
 
-Order work as a sequence of small units, each ending in a state you can check, and don't advance until the current one is green.
+把工作排成一串小单元，每个结束于一个可检查的状态，当前一个不绿就不前进。
 
-**Why:** A break caught at the unit that caused it is cheap to localize. A break caught after a batch is buried, and you have already built further on a broken base. Sequencing those same units into a delivery a reviewer can replay turns "trust me" into "watch it go red, then green."
+**为什么：** 在肇事单元处抓到的破坏定位起来便宜。一批之后才抓到的破坏被埋在底下，而且你已经在坏地基上继续建了。把这些单元按审查者可以重放的顺序交付，就把"相信我"变成"看它先红再绿"。
 
-**Execution.** In a sweep, migration, or any run of similar edits, verify each change before starting the next. Each unit is a before/after bracket: known-good state, one change, run the check, then proceed. Rebase onto clean trunk first so every check measures against the real baseline. When a lever does the edits, the per-unit check is nearly free. Run it anyway.
+**执行。** 在一次 sweep、迁移或任何一串相似编辑中，先做验证再开始下一个改动。每个单元是一组前后夹逼：已知良好状态、一个改动、跑检查、再前进。先 rebase 到干净的 trunk，让每次检查都对着真实 baseline 量。当杠杆代做编辑时，逐单元检查几乎免费——照跑不误。
 
-**Delivery.** Stack commits and PRs in the order that proves the work. The canonical shape is the failing test first, then the fix on top. Other story orders are a subtraction before the reshape, a baseline capture before the treatment, the scaffold before the feature. Each commit lands on its own and the sequence reads as an argument.
+**交付。** 按能自证工作的顺序堆叠 commit 和 PR。经典形态是先失败测试、再上面的修复。其他叙事顺序也行：重塑之前先做减法、施加处理之前先采 baseline、feature 之前先搭 scaffold。每个 commit 独立成立，整个序列读起来像一场论证。
 
-**Pattern:**
-- Pick the smallest unit that ends in a check: an edit plus its test, or a commit that stands alone.
-- Verify before advancing. Red to green per unit, never deferred to a final batch.
-- Order the units so the sequence builds confidence on its own, for you while executing and for a reviewer reading the stack.
+**模式：**
+- 挑结束于一次检查的最小单元：一次编辑加它的测试，或一个独立成立的 commit。
+- 先验证再前进。每单元红到绿，绝不攒到最后一批。
+- 排好单元顺序，让序列自己积累信心——对执行中的你，也对读 stack 的审查者。
 
-The sequencing complement to the **prove-it-works** principle skill, which keeps each check real, and the **build-the-lever** principle skill, which makes the per-unit check cheap.
+这是 **prove-it-works** 原则 skill 的排序面搭档——它保持每次检查为真；也是 **build-the-lever** 原则 skill 的搭档——它让逐单元检查变得便宜。

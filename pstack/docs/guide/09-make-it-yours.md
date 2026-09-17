@@ -1,67 +1,67 @@
-# Make it yours
+# 把它变成你的
 
-poteto-mode is one person's style. The machinery underneath, playbooks, routing, model roles, works just as well wearing yours. This page covers generating a personal mode, capturing lessons from a session, authoring a focused skill, and testing a skill change before you trust it.
+poteto-mode 是一个人的风格。底下的机器——playbook、路由、模型角色——套上你的风格一样好用。本页讲怎么生成个人 mode、把一次会话的教训沉淀下来、编写一个聚焦的 skill，以及在信任一次 skill 变更之前先测试它。
 
-## Generate your own mode with `/automate-me`
+## 用 `/automate-me` 生成你自己的 mode
 
 ```text
 /automate-me
 ```
 
-You don't describe your style, because [`/automate-me`](../../skills/automate-me/SKILL.md) reads it out of your history. It mines your recent transcripts in the active workspace for repeated preferences, in how you like replies, delegation, verification, code, prose, and process, then asks you which patterns are really you. It drafts `.cursor/skills/<your-name>-mode/SKILL.md` through Cursor's built-in `create-skill` flow, runs the draft through [`/unslop`](../../skills/unslop/SKILL.md), and opens a PR from a worktree so you review it like any other change.
+你不用描述自己的风格，因为 [`/automate-me`](../../skills/automate-me/SKILL.md) 会从你的历史里把它读出来。它挖掘你在当前工作区最近的 transcript，寻找重复的偏好——你喜欢的回复方式、delegation、verification、代码、文字、流程——然后问你哪些模式真的是你。它经由 Cursor 内建的 `create-skill` 流程起草 `.cursor/skills/<your-name>-mode/SKILL.md`，把草稿过一遍 [`/unslop`](../../skills/unslop/SKILL.md)，再从 worktree 开一个 PR，让你像对待其他改动一样 review。
 
-Run it again whenever your habits drift:
-
-```text
-/automate-me update my mode skill with everything since its last edit
-```
-
-Update mode mines only the history since the skill last changed. It keeps rules you haven't contradicted, revises the ones with new evidence, and adds sections only for genuinely new patterns.
-
-## Capture a session's lessons with `/reflect`
-
-Right after a task that taught you something, run:
+每当你的习惯漂移了，再跑一次：
 
 ```text
-/reflect that took way too long. capture what we learned so the next run doesn't repeat it.
+/automate-me 用这个 skill 上次编辑以来的一切更新我的 mode skill
 ```
 
-[`/reflect`](../../skills/reflect/SKILL.md) sends the transcript to three parallel reviewers, then a synthesizer sorts the proposals into `Accepted`, `Rejected`, and `Backlog` and waits for your approval before any skill changes. Approve a proposal only if it would change a future decision. One weird session is an anecdote, not a rule.
+update 模式只挖 skill 上次变更之后的历史。它保留你没推翻过的规则，修订有新证据的，只为真正的新模式添加小节。
 
-## Author a focused skill
+## 用 `/reflect` 沉淀一次会话的教训
 
-When you already know the workflow you want to capture:
+在刚教会你一些东西的任务之后，立刻跑：
 
 ```text
-/poteto-mode write a skill for verifying database migrations in this repo
+/reflect 刚才太慢了。把学到的东西沉淀下来，下次运行别再重复。
 ```
 
-Writing a skill matches the [Authoring or modifying a skill playbook](../../skills/poteto-mode/playbooks/authoring-a-skill.md), which routes through Cursor's built-in `create-skill`, validates the frontmatter and links, and ships the result through the Opening a PR playbook. Agent-facing prose has a higher bar than human prose, because an unhelpful sentence becomes an instruction some future agent follows. Let the playbook hold that bar rather than writing a `SKILL.md` freehand.
+[`/reflect`](../../skills/reflect/SKILL.md) 把 transcript 发给三个并行 reviewer，然后由 synthesizer 把提案分进 `Accepted`、`Rejected`、`Backlog`，并在任何 skill 变更之前等你批准。只批准那种会改变未来某个决策的提案。一次奇怪的会话是轶事，不是规则。
 
-One special case has its own generator. A skill that must drive your app and prove behavior is a verification skill, so use [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md) and [`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) instead. [Verify and ship](./06-verify-and-ship.md#create-a-project-verification-skill) covers both.
+## 编写聚焦的 skill
 
-## Write docs to a standard with `/technical-writing`
-
-Skills aren't the only prose you ship. For docs, RFCs, readmes, PR descriptions, and commit messages:
+当你已经知道要沉淀的工作流：
 
 ```text
-/technical-writing review the readme changes
+/poteto-mode 写一个在本仓库验证数据库迁移的 skill
 ```
 
-[`/technical-writing`](../../skills/technical-writing/SKILL.md) applies a layered standard with one goal, prose a tired engineer understands on the first read. It picks the document's mode first (tutorial, how-to, reference, or explanation), then works sentence by sentence: who does what, one thought per sentence, nothing readable two ways. Use it to review what you or an agent just wrote, or name it up front when you ask for a doc.
+写 skill 会匹配到 [Authoring or modifying a skill playbook](../../skills/poteto-mode/playbooks/authoring-a-skill.md)，它经由 Cursor 内建 `create-skill` 路由、校验 frontmatter 和链接，并经由 Opening a PR playbook 交付结果。面向 agent 的文字比面向人类的文字门槛更高，因为一句没写好的话会变成某个未来 agent 遵循的指令。让 playbook 守住这道门槛，别徒手裸写 `SKILL.md`。
 
-## Test a skill change blind
+有一个特例有自己的生成器：必须驱动你的 app 并证明行为的 skill 是 verification skill，改用 [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md) 和 [`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md)。[验证并交付](./06-verify-and-ship.md#create-a-project-verification-skill)两个都讲了。
 
-A skill edit affects every future session, so test it like the experiment it is:
+## 用 `/technical-writing` 按标准写文档
+
+skill 不是你唯一交付的文字。docs、RFC、readme、PR 描述、commit message 都适用：
 
 ```text
-/poteto-mode run the eval playbook on this skill change. same task for both variants, candidates stay blind.
+/technical-writing review 这份 readme 的改动
 ```
 
-The [Eval playbook](../../skills/poteto-mode/playbooks/eval.md) is built around one failure mode, the observer effect. An agent that knows it's being evaluated behaves differently. So candidate agents get an organic-looking task in sanitized directories, never the words "eval" or "candidate", and never each other's existence. One judge scores all outputs under neutral labels, and chain-following gets graded from which files each candidate actually read, not from what it claims.
+[`/technical-writing`](../../skills/technical-writing/SKILL.md) 应用一套分层标准，目标只有一个：疲惫的工程师第一遍就能读懂的文字。它先判定文档的 mode（tutorial、how-to、reference 或 explanation），然后逐句打磨：谁做什么、一句一个想法、没有任何能读出两种意思的句子。用它来 review 你或 agent 刚写的东西，或者在你要一份文档时提前点名。
 
-Read every output yourself before accepting the verdict. If you disagree with the judge, suspect the rubric before you suspect your judgment.
+## 盲测一次 skill 变更
 
-**Pitfall:** don't edit a skill mid-task because it's misbehaving. Fix it in its own PR and keep the task moving. A skill edit that ships tangled into feature work is invisible to review and impossible to evaluate.
+skill 编辑会影响此后每个会话，所以要把它当实验来测：
 
-Next: [Recipes and pitfalls](./10-recipes-and-pitfalls.md).
+```text
+/poteto-mode 对这次 skill 变更跑 eval playbook。两个变体跑同一个任务，候选保持盲态。
+```
+
+[Eval playbook](../../skills/poteto-mode/playbooks/eval.md) 围绕一种失效模式构建：观察者效应。知道自己在被评估的 agent 行为会变形。所以候选 agent 拿到的是在消毒目录里看起来自然的任务——永远看不到 "eval" 或 "candidate" 字样，也永远不知道彼此存在。一个 judge 在中性标签下给所有输出打分，链式跟随依据每个候选实际读了哪些文件来评分，而不是看它自称读了什么。
+
+接受裁决之前自己读一遍每份输出。如果你不同意 judge，先怀疑 rubric，再怀疑自己的判断。
+
+**陷阱：** 不要因为 skill 表现不好就在任务中途改它。把它放在自己的 PR 里修，让任务继续走。缠进 feature 工作里交付的 skill 编辑，对 review 不可见、也无法评估。
+
+下一页：[配方与陷阱](./10-recipes-and-pitfalls.md)。

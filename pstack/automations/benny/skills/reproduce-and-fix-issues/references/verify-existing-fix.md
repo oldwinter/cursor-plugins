@@ -1,93 +1,93 @@
-# Verify an existing fix
+# 验证已有修复
 
-Use this mode when an open pull request or merged commit plausibly fixes the report.
+开着的 pull request 或已合并 commit 可能修了这份报告时用本模式。
 
-The existing artifact owns the fix. Verify it. Do not edit it, author a competing patch, or open another pull request.
+已有修复物拥有该修复。验证它。不要编辑它、不写竞争补丁、不开另一个 pull request。
 
-## Qualify the artifact
+## 判定修复物资格
 
-Require one concrete artifact:
+要求一个具体修复物：
 
-- An open pull request with code changes that address the symptom
-- A merged pull request
-- A merged commit with matching code and intent
+- 开着、代码改动针对该症状的 pull request
+- 已合并的 pull request
+- 已合并、代码和意图都匹配的 commit
 
-A thread claim, tracker status, branch name, or cause hypothesis without a pull request or commit is not enough.
+thread 里的声称、tracker 状态、分支名或没有 pull request 或 commit 支撑的原因假设都不够。
 
-When several artifacts exist, choose the one linked from the source thread or tracker. Otherwise choose the closest match to the affected code and state why.
+多个修复物并存时，选源 thread 或 tracker 链接的那个。否则选最接近受影响代码的并说明原因。
 
-## Protect the working tree
+## 保护工作树
 
-Use an isolated worktree or another clean checkout when the repository supports it. Do not overwrite user changes.
+仓库支持时用隔离的 worktree 或另一个干净 checkout。不要覆盖用户改动。
 
-Record:
+记录：
 
-- Baseline revision
-- Patched revision
-- Pull request or commit URL
-- Build and environment inputs shared by both runs
+- baseline 修订版
+- 打过补丁的修订版
+- pull request 或 commit URL
+- 两次运行共享的 build 和环境输入
 
-Use regular `github.com` pull request links.
+用常规 `github.com` pull request 链接。
 
-## Measure the baseline
+## 测 baseline
 
-For an open pull request, use its base branch as the baseline.
+开着的 pull request 用其 base 分支作 baseline。
 
-For a merged fix, use the revision immediately before the fix when that revision builds and represents the old behavior.
+已合并修复用紧邻修复之前的修订版——前提是该修订版能 build 且代表旧行为。
 
-Through the configured control adapter:
+经配置的 control adapter：
 
-1. Bring up the baseline app.
-2. Confirm the correct app and environment.
-3. Run the reported path through real UI actions.
-4. Observe the discriminating symptom.
-5. Reset and repeat it.
-6. Capture baseline recording, screenshot, and state check.
+1. 拉起 baseline app。
+2. 确认正确的 app 和环境。
+3. 经真实 UI 动作跑报告的路径。
+4. 观察判别性症状。
+5. 重置并重复。
+6. 捕获 baseline 录像、截图和状态检查。
 
-If the symptom does not appear twice on the baseline, there is no baseline. Do not claim that the fix works.
+baseline 上症状没出现两次就没有 baseline。不要声称修复有效。
 
-## Measure the patched build
+## 测打过补丁的 build
 
-Build and run the pull request or fix commit with the same environment and data.
+用同一环境和数据 build 并运行该 pull request 或修复 commit。
 
-1. Run the same UI path.
-2. Repeat it twice.
-3. Confirm that the broken state is gone.
-4. Confirm the expected state appears.
-5. Capture after recording, screenshot, and the same state check.
+1. 跑同一 UI 路径。
+2. 重复两遍。
+3. 确认损坏状态已消失。
+4. 确认期望状态出现。
+5. 捕获 after 录像、截图和同一状态检查。
 
-Do not stop at compilation or tests. The after result must come from a running patched app.
+别停在编译或测试。after 结果必须来自运行中的打过补丁的 app。
 
-## Outcomes
+## 结果
 
-### Confirmed
+### 已确认
 
-The baseline reproduces twice and the patched build resolves it twice.
+baseline 复现两次且打过补丁的 build 两次都消除它。
 
-- Mark operations status as verified.
-- Link the artifact.
-- Post one concise source-thread reply after the source preflight.
-- Include the before and after result.
-- Open no pull request.
+- operations 状态标为已验证。
+- 链接修复物。
+- 源 preflight 后发一条简洁的源 thread 回复。
+- 含 before 和 after 结果。
+- 不开 pull request。
 
-### Insufficient fix
+### 修复不足
 
-The symptom appears on both baseline and patched builds.
+baseline 和打过补丁的 build 上都出现症状。
 
-- Mark operations status as reproduced but not fixed.
-- Link the artifact and say it did not resolve the symptom.
-- Post the normal confirmed-repro source update if the run has not already used it.
-- Open no competing pull request.
+- operations 状态标为已复现但未修复。
+- 链接修复物并说明它没消除症状。
+- 本次运行还没用过正常确认复现的源更新就发它。
+- 不开竞争性 pull request。
 
-### Inconclusive
+### 无定论
 
-The baseline does not reproduce, the patched app cannot run, or the evidence does not show the discriminating state.
+baseline 不复现、打过补丁的 app 跑不起来、或证据没显示判别性状态。
 
-- Do not claim success.
-- State which half could not be measured.
-- Keep the result in the operations thread or run output.
-- Post nothing in the source thread unless a direct question requires an answer.
+- 不要声称成功。
+- 说明哪一半测不了。
+- 结果留在 operations thread 或运行输出。
+- 源 thread 什么也不发，除非有直接提问必须回答。
 
-## Cleanup
+## 清理
 
-Stop both builds, remove temporary profiles and captures according to retention policy, and return the repository to its prior state without discarding user work.
+停掉两个 build，按保留策略移除临时 profile 和捕获物，不丢弃用户工作地把仓库还原到先前状态。

@@ -1,23 +1,23 @@
-# Route work through `/poteto-mode`
+# 通过 `/poteto-mode` 路由工作
 
-`/poteto-mode` is the front door. You give it a goal, it matches one of twenty-three playbooks, copies that playbook's steps into the todo list, and calls the other skills as the steps need them. In this page you learn what a good prompt looks like, and how little of one you actually need.
+`/poteto-mode` 是正门。你给它一个目标，它匹配二十三个 playbook 之一，把该 playbook 的步骤复制进 todo list，并在步骤需要时调用其他 skill。本页教你什么样的 prompt 算好 prompt，以及你实际需要写的其实少得可怜。
 
-![A dispatcher pulls a switch lever to route robots on rail handcars toward lit gates, under a /poteto-mode departure board listing BUG FIX, FEATURE, and INVESTIGATION.](./images/router.jpg)
+![一名调度员扳动道岔拉杆，把乘轨道手摇车的机器人引向亮着灯的闸门，上方是写着 BUG FIX、FEATURE、INVESTIGATION 的 /poteto-mode 出发信息板。](./images/router.jpg)
 
-## What happens to your prompt
+## 你的 prompt 会经历什么
 
 ```mermaid
 flowchart TD
-    A[Your prompt] --> B[poteto-mode]
-    B --> C[Read the Principles section]
-    C --> D{Match the task}
-    D -->|Read-only question| E[Investigation]
-    D -->|Defect| F[Bug fix]
-    D -->|New behavior| G[Feature]
-    D -->|Structure only| H[Refactoring]
-    D -->|Measured slowness| I[Perf issue]
-    D -->|Large work or no match| J[figure-it-out]
-    E --> K[Verify and report]
+    A[你的 prompt] --> B[poteto-mode]
+    B --> C[阅读 Principles 一节]
+    C --> D{匹配任务}
+    D -->|只读问题| E[Investigation]
+    D -->|缺陷| F[Bug fix]
+    D -->|新行为| G[Feature]
+    D -->|仅结构| H[Refactoring]
+    D -->|已测量的缓慢| I[Perf issue]
+    D -->|大型工作或无匹配| J[figure-it-out]
+    E --> K[验证并汇报]
     F --> K
     G --> K
     H --> K
@@ -25,19 +25,19 @@ flowchart TD
     J --> K
 ```
 
-The diagram shows the common routes. There are also playbooks for hillclimbing a metric, diagnosing runtime symptoms and captured traces, prototypes, visual parity, authoring and evaluating skills, autonomous runs, babysitting a PR or stack to merge-ready, shipping a verified stack, running a PR queue on autopilot, orchestrating project-scale programs, session pickup, pausing safely, multi-phase plans, and worktree cleanup. The [playbook directory](../../skills/poteto-mode/playbooks/) has the full set.
+图中展示的是常见路由。还有针对这些场景的 playbook：对指标做 hillclimb、诊断 runtime 症状与已捕获 trace、prototype、visual parity、编写和评估 skill、autonomous run、把 PR 或 stack 看护到可合并、交付已验证的 stack、以 autopilot 跑 PR 队列、编排项目级工程、session pickup、安全暂停、multi-phase plan，以及 worktree cleanup。[playbook 目录](../../skills/poteto-mode/playbooks/)里有完整列表。
 
-## Say the goal, not the ceremony
+## 说目标，不说仪式
 
-You don't write a spec. You say what's wrong or what you want, plus anything you already know that saves the agent time:
+你不用写 spec。你说哪里不对、或想要什么，再加上任何你已知、能省 agent 时间的信息：
 
 ```text
-/poteto-mode users get two notifications after a retry. repro first, then fix and verify.
+/poteto-mode 重试之后用户收到两条通知。先复现，再修复并验证。
 ```
 
-That's a Bug fix prompt. "repro first" is a real constraint, not politeness, and the playbook honors it. Watch the todo list fill with the Bug fix steps. A skipped step stays visible with `skip: <reason>`.
+这就是一个 Bug fix prompt。"先复现"是真正的约束而不是客气话，playbook 会遵守它。看 todo list 被 Bug fix 的步骤填满。被跳过的步骤会带着 `skip: <reason>` 保持可见。
 
-When the conversation already carries the context, the prompt shrinks to almost nothing. All of these are enough:
+当对话本身已经带着上下文时，prompt 可以缩到几乎没有。下面这些全都够用：
 
 ```text
 /poteto-mode do it
@@ -51,48 +51,48 @@ continue
 keep going until done
 ```
 
-Short works because the mode is sticky and the playbook holds the structure. Your words carry the intent, and the skill carries the rigor.
+短之所以可行，是因为这个 mode 是 sticky 的、playbook 承载了结构。你的话承载意图，skill 承载严谨。
 
-## Switch tasks with "new task"
+## 用 "new task" 切换任务
 
-A long chat accumulates context from the last task. When you change subjects, say so:
-
-```text
-/poteto-mode new task. figure out why the cache entry survives logout. don't change any code yet.
-```
-
-"new task" tells `/poteto-mode` to re-match rather than continue the prior playbook. "don't change any code yet" pins this one to Investigation. Without those two phrases, a mode mid-Feature tends to treat your question as the next feature step.
-
-## Give parallel work its own worktree
-
-If you run several agents against one repository, they will fight over the working tree. Ask for isolation up front:
+长聊天会累积上一个任务的上下文。换主题时，明说：
 
 ```text
-/poteto-mode new task. branch off <base> in a fresh worktree, then port the parser change there.
+/poteto-mode new task。搞清楚为什么 logout 之后 cache 条目还在。先别改任何代码。
 ```
 
-Each task in its own branch and worktree means no agent stomps another's files. The [Opening a PR playbook](../../skills/poteto-mode/playbooks/opening-a-pr.md) already works from a worktree for code changes, so mostly you only say this when a specific base or location matters.
+"new task" 告诉 `/poteto-mode` 重新匹配，而不是继续上一个 playbook。"先别改任何代码"把这次固定在 Investigation 上。没有这两个短语，一个正处于 Feature 中途的 mode 容易把你的问题当成该 feature 的下一步。
 
-Worktrees accumulate. When disk gets tight, ask:
+## 给并行工作配独立 worktree
+
+如果你让多个 agent 对同一个仓库干活，它们会争抢工作树。一开始就要求隔离：
 
 ```text
-/poteto-mode what's eating my disk? prune the worktrees that are safe to prune.
+/poteto-mode new task。从 <base> 拉一个全新 worktree，把 parser 改动移植过去。
 ```
 
-The [Worktree cleanup playbook](../../skills/poteto-mode/playbooks/worktree-cleanup.md) classifies every worktree by merge state, uncommitted work, and which chats still touch it. It deletes only what that evidence clears and pauses for your call on anything holding uncommitted work.
+每个任务待在自己的 branch 和 worktree 里，就不会有 agent 踩坏别人的文件。[Opening a PR playbook](../../skills/poteto-mode/playbooks/opening-a-pr.md) 对代码改动本来就在 worktree 里进行，所以大多数时候只有当特定 base 或位置要紧时你才需要说这句。
 
-## Leave it running
-
-When you step away, say what done means and go:
+worktree 会越积越多。磁盘吃紧时，问：
 
 ```text
-/poteto-mode im stepping away. keep going until the migration check reports zero old callers. log your decisions.
+/poteto-mode 是什么在吃我的磁盘？把可以安全剪除的 worktree 剪掉。
 ```
 
-Work you'll review later routes through [`/figure-it-out`](../../skills/figure-it-out/SKILL.md), which designs the run's phases and keeps a [`/show-me-your-work`](../../skills/show-me-your-work/SKILL.md) decision log. [Run work while you sleep](./07-overnight.md) covers the full overnight contract.
+[Worktree cleanup playbook](../../skills/poteto-mode/playbooks/worktree-cleanup.md) 会按合并状态、未提交工作、以及还有哪些聊天在用它，对每个 worktree 分类。它只删证据允许的，对任何持有未提交工作的会停下来等你拍板。
 
-**Pitfall:** don't enumerate skills in your prompt ("use /how, then /architect, then /arena..."). The playbook already sequences them, and a hand-written sequence usually reorders or drops steps the playbook would have kept. Name a skill only when you want to override a specific choice.
+## 让它继续跑
 
-Read [`poteto-mode`](../../skills/poteto-mode/SKILL.md) itself for the full routing rules.
+你要离开时，说清楚什么叫"做完"，然后走人：
 
-Next: [Understand the code](./03-understand.md).
+```text
+/poteto-mode 我要离开一会儿。继续跑，直到迁移检查报告旧调用方为零。记录你的决策。
+```
+
+你打算事后审查的工作会经由 [`/figure-it-out`](../../skills/figure-it-out/SKILL.md) 路由——它设计这次运行的各阶段，并维护一份 [`/show-me-your-work`](../../skills/show-me-your-work/SKILL.md) 决策日志。[睡觉时让工作继续跑](./07-overnight.md)讲完整的 overnight 契约。
+
+**陷阱：** 不要在 prompt 里罗列 skill（"先用 /how，然后 /architect，然后 /arena……"）。playbook 已经排好了它们的顺序，手写顺序通常会重排或丢掉 playbook 本来会保留的步骤。只有当你想覆盖某个具体选择时才点名 skill。
+
+完整路由规则见 [`poteto-mode`](../../skills/poteto-mode/SKILL.md) 本体。
+
+下一页：[理解代码](./03-understand.md)。
