@@ -1,102 +1,149 @@
 #!/usr/bin/env node
 
-import { readFileSync, existsSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
-import Ajv from "ajv";
-import addFormats from "ajv-formats";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  analyzeSource,
+  loadJson,
+  validateAgainstSchema,
+  validateComponentIntegrity,
+  validateEntryUniqueness,
+  validateOrphanManifests,
+  validateReadmeIndex,
+  validateVersion,
+} from "./validate-plugins-lib.mjs";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const root = resolve(__dirname, "..");
-
-function loadJSON(path) {
-  return JSON.parse(readFileSync(path, "utf-8"));
-}
-
-const marketplaceSchema = loadJSON(
-  resolve(root, "schemas/marketplace.schema.json")
-);
-const pluginSchema = loadJSON(resolve(root, "schemas/plugin.schema.json"));
-
-const ajv = new Ajv({ allErrors: true });
-addFormats(ajv);
-
-const validateMarketplace = ajv.compile(marketplaceSchema);
-const validatePlugin = ajv.compile(pluginSchema);
-
+const scriptDirectory = dirname(fileURLToPath(import.meta.url));
+const root = resolve(scriptDirectory, "..");
 let errors = 0;
 
 function fail(message) {
-  console.error(`ERROR: ${message}`);
-  errors++;
+  console.error("ERROR: " + message);
+  errors += 1;
 }
 
-// 1. Validate marketplace.json
-const marketplacePath = resolve(root, ".cursor-plugin/marketplace.json");
+function reportSchemaErrors(prefix, schemaErrors) {
+  fail(prefix);
+  for (const error of schemaErrors) {
+    console.error("  " + error);
+  }
+}
 
+const marketplaceSchema = loadJson(
+  resolve(root, "schemas/marketplace.schema.json"),
+  "schemas/marketplace.schema.json",
+  fail
+);
+const pluginSchema = loadJson(
+  resolve(root, "schemas/plugin.schema.json"),
+  "schemas/plugin.schema.json",
+  fail
+);
+
+const marketplacePath = resolve(root, ".cursor-plugin/marketplace.json");
 if (!existsSync(marketplacePath)) {
   fail(".cursor-plugin/marketplace.json not found");
-  process.exit(1);
+}
+const marketplace = existsSync(marketplacePath)
+  ? loadJson(marketplacePath, ".cursor-plugin/marketplace.json", fail)
+  : null;
+
+const marketplaceSchemaErrors =
+  marketplace && marketplaceSchema
+    ? validateAgainstSchema(marketplace, marketplaceSchema)
+    : [];
+if (marketplaceSchemaErrors.length > 0) {
+  reportSchemaErrors(
+    "marketplace.json schema validation failed:",
+    marketplaceSchemaErrors
+  );
 }
 
-const marketplace = loadJSON(marketplacePath);
+const entries = Array.isArray(marketplace?.plugins) ? marketplace.plugins : [];
+validateEntryUniqueness(entries, fail);
+const registeredManifests = new Set();
+const manifestsByName = new Map();
 
-if (!validateMarketplace(marketplace)) {
-  fail("marketplace.json schema validation failed:");
-  for (const err of validateMarketplace.errors) {
-    console.error(`  ${err.instancePath || "/"}: ${err.message}`);
+for (const entry of entries) {
+  const source = analyzeSource(root, entry.source);
+  if (source.error) {
+    fail('Plugin "' + entry.name + '": ' + source.error);
+    continue;
   }
-}
+  if (source.kind === "remote") continue;
 
-// 2. Validate each plugin
-for (const entry of marketplace.plugins ?? []) {
-  const pluginDir = resolve(root, entry.source);
-  const pluginJsonPath = resolve(pluginDir, ".cursor-plugin/plugin.json");
-
-  // Check source directory exists
-  if (!existsSync(pluginDir)) {
+  const pluginDirectory = source.directory;
+  const pluginJsonPath = resolve(
+    pluginDirectory,
+    ".cursor-plugin/plugin.json"
+  );
+  if (!existsSync(pluginDirectory)) {
     fail(
-      `Plugin "${entry.name}": source directory "${entry.source}" does not exist`
+      'Plugin "' +
+        entry.name +
+        '": source directory "' +
+        entry.source +
+        '" does not exist'
     );
     continue;
   }
-
-  // Check plugin.json exists
   if (!existsSync(pluginJsonPath)) {
     fail(
-      `Plugin "${entry.name}": missing .cursor-plugin/plugin.json in "${entry.source}"`
+      'Plugin "' +
+        entry.name +
+        '": missing .cursor-plugin/plugin.json in "' +
+        entry.source +
+        '"'
     );
     continue;
   }
 
-  const pluginJson = loadJSON(pluginJsonPath);
+  registeredManifests.add(pluginJsonPath);
+  const pluginLabel = entry.source + "/.cursor-plugin/plugin.json";
+  const pluginJson = loadJson(pluginJsonPath, pluginLabel, fail);
+  if (!pluginJson) continue;
+  manifestsByName.set(entry.name, pluginJson);
 
-  if (!validatePlugin(pluginJson)) {
-    fail(
-      `Plugin "${entry.name}": plugin.json schema validation failed (${entry.source}/.cursor-plugin/plugin.json):`
+  const pluginSchemaErrors = pluginSchema
+    ? validateAgainstSchema(pluginJson, pluginSchema)
+    : [];
+  if (pluginSchemaErrors.length > 0) {
+    reportSchemaErrors(
+      'Plugin "' + entry.name + '": plugin.json schema validation failed:',
+      pluginSchemaErrors
     );
-    for (const err of validatePlugin.errors) {
-      const detail =
-        err.keyword === "additionalProperties"
-          ? `${err.message}: "${err.params.additionalProperty}"`
-          : err.message;
-      console.error(`  ${err.instancePath || "/"}: ${detail}`);
-    }
   }
-
-  // Check that marketplace name matches plugin name
   if (pluginJson.name && pluginJson.name !== entry.name) {
     fail(
-      `Plugin "${entry.name}": marketplace name does not match plugin.json name "${pluginJson.name}"`
+      'Plugin "' +
+        entry.name +
+        '": marketplace name does not match plugin.json name "' +
+        pluginJson.name +
+        '"'
     );
   }
+  validateVersion(pluginJson, pluginLabel, fail);
+  validateComponentIntegrity(
+    pluginDirectory,
+    pluginJson,
+    pluginLabel,
+    fail
+  );
 }
 
-// 3. Report results
-if (errors > 0) {
-  console.error(`\nValidation failed with ${errors} error(s).`);
-  process.exit(1);
-} else {
-  console.log("All plugins validated successfully.");
-  process.exit(0);
+validateOrphanManifests(root, registeredManifests, fail);
+
+try {
+  const readme = readFileSync(resolve(root, "README.md"), "utf8");
+  validateReadmeIndex(readme, entries, manifestsByName, fail);
+} catch (error) {
+  fail("README.md: cannot read plugin index: " + error.message);
 }
+
+if (errors > 0) {
+  console.error("\nValidation failed with " + errors + " error(s).");
+  process.exit(1);
+}
+
+console.log("All plugins validated successfully.");
