@@ -22,7 +22,7 @@
       "description": "Short description of what the plugin does."
     },
     "version": {
-      "type": "string",
+      "$ref": "#/$defs/semver",
       "description": "Semantic version of the plugin (e.g. \"1.2.3\")."
     },
     "minClientVersions": {
